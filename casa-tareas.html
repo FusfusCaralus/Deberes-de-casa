@@ -1078,7 +1078,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}} };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1101,6 +1101,7 @@ if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({.
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
+if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -1214,7 +1215,7 @@ function resetAll(){
   });
 }
 function resetTaskRotation(){
-  customConfirm("¿Reiniciar el reparto de tareas? Se borra qué se marcó como hecho y la rotación empieza de cero desde hoy, como si la casa estuviera recién estrenada. La casa, la familia, los puntos, las rachas y los logros ya conseguidos no se tocan.", ()=>{
+  customConfirm("¿Reiniciar el reparto de tareas? Se borra qué se marcó como hecho y la rotación empieza de cero desde hoy, como si la casa estuviera recién estrenada. La casa, la familia, los puntos, las rachas, los logros y lo que ya tengas cubierto en la cuenta atrás de la casa completa no se tocan.", ()=>{
     STATE.done = {};
     STATE.householdDone = {};
     STATE.taskTransfers = [];
@@ -1227,12 +1228,13 @@ function resetTaskRotation(){
   });
 }
 function resetProgressAndBadges(){
-  customConfirm("¿Borrón y cuenta nueva de logros y progreso? Se borran los puntos, las rachas, las medallas y los premios conseguidos, y todas las tareas quedan sin marcar. La casa, la familia y el reparto de tareas no se tocan.", ()=>{
+  customConfirm("¿Borrón y cuenta nueva de logros y progreso? Se borran los puntos, las rachas, las medallas, los premios conseguidos y lo cubierto en la cuenta atrás de la casa completa, y todas las tareas quedan sin marcar. La casa, la familia y el reparto de tareas no se tocan.", ()=>{
     STATE.stats = {};
     STATE.earned = {};
     STATE.prizes = {};
     STATE.done = {};
     STATE.householdDone = {};
+    STATE.lifetimeCoverage = {cristal:{},puerta:{},mueble:{},roomtask:{}};
     save();
     closeModal();
     renderAll();
@@ -1540,6 +1542,9 @@ function helpWithTask(ownerMemberIdx, key){
     const plant = STATE.plants.find(p=>p.id===plantId);
     if(plant) plant.lastWatered = today;
   }
+  if(key==='cristal' || key==='puerta' || key==='mueble' || key.indexOf('roomtask-')===0){
+    recordLifetimeCoverage(today, ownerMemberIdx, key);
+  }
   updateStats(selMemberIdx, task, 1); // los minutos/puntos van para quien ayuda
   sfxDone();
   const ownerName = STATE.members[ownerMemberIdx].name;
@@ -1629,6 +1634,8 @@ function doExtraRoomTask(roomId, rtId){
   const key = "extravol-room-"+roomId+"-"+rtId+"-"+today;
   if(isDone(today, selMemberIdx, key)) return;
   toggleDone(today, selMemberIdx, key);
+  if(!STATE.lifetimeCoverage) STATE.lifetimeCoverage = {cristal:{},puerta:{},mueble:{},roomtask:{}};
+  STATE.lifetimeCoverage.roomtask[rtId+"|"+roomId] = true;
   updateStats(selMemberIdx, {min:rt.min, key:"roomtask-"+rtId}, 1);
   sfxDone();
   toast("Sumado: "+rt.name);
@@ -2302,6 +2309,10 @@ function toggleDoneUI(dateStr, memberIdx, key){
     const plantId = key.split('-')[1];
     const plant = STATE.plants.find(p=>p.id===plantId);
     if(plant){ plant.lastWatered = dateStr; save(); }
+  }
+  if(!wasDone && (key==='cristal' || key==='puerta' || key==='mueble' || key.indexOf('roomtask-')===0)){
+    recordLifetimeCoverage(dateStr, memberIdx, key);
+    save();
   }
   if(wasDone) sfxUndo(); else sfxDone();
   checkBadges(memberIdx);
@@ -3719,6 +3730,7 @@ if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({.
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
+if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
@@ -3882,7 +3894,7 @@ function renderRankingList(){
       <button class="btn small" style="${hasPendingCongrats(r.m.id)?'background:var(--pine);color:#fff;border:1px solid var(--pine);':'background:none;color:var(--pine);border:1px solid var(--pine);'}" onclick="sendCongrats(${r.i})" title="Felicitar">🎉</button>
     </div>`).join("");
 }
-function houseFullCoverage(){
+function backfillLifetimeCoverage(){
   const cristales = flatten('cristales');
   const puertas = flatten('puertas');
   const muebles = flatten('muebles');
@@ -3891,48 +3903,76 @@ function houseFullCoverage(){
   const todayDi = dayIndexFor(dateToStr(new Date()));
   const maxLookback = 730;
   const startDi = Math.max(0, todayDi - maxLookback);
-
-  const coveredCristal = new Set(), coveredPuerta = new Set(), coveredMueble = new Set(), coveredRoomTask = new Set();
-
+  const lc = {cristal:{}, puerta:{}, mueble:{}, roomtask:{}};
   for(let di=startDi; di<=todayDi; di++){
     const ds = dateFromDayIndex(di);
     for(let mi=0; mi<STATE.members.length; mi++){
       if(isExcused(ds, mi)) continue;
-      if(cristales.length){ const idx = rotIndex(di, mi, nMembers, cristales.length); if(isDone(ds, mi, 'cristal')) coveredCristal.add(idx); }
-      if(puertas.length){ const idx = rotIndex(di, mi, nMembers, puertas.length); if(isDone(ds, mi, 'puerta')) coveredPuerta.add(idx); }
-      if(muebles.length){ const idx = rotIndex(di, mi, nMembers, muebles.length); if(isDone(ds, mi, 'mueble')) coveredMueble.add(idx); }
+      if(cristales.length && isDone(ds, mi, 'cristal')){ const it=cristales[rotIndex(di,mi,nMembers,cristales.length)]; if(it) lc.cristal[it.itemId]=true; }
+      if(puertas.length && isDone(ds, mi, 'puerta')){ const it=puertas[rotIndex(di,mi,nMembers,puertas.length)]; if(it) lc.puerta[it.itemId]=true; }
+      if(muebles.length && isDone(ds, mi, 'mueble')){ const it=muebles[rotIndex(di,mi,nMembers,muebles.length)]; if(it) lc.mueble[it.itemId]=true; }
       if(rooms.length && STATE.roomTasks.length){
         STATE.roomTasks.forEach((rt,rtIdx)=>{
+          if(!isDone(ds, mi, "roomtask-"+rt.id)) return;
           const offset = Math.ceil(rooms.length*rtIdx/STATE.roomTasks.length);
           const roomIdx = (rotIndex(di,mi,nMembers,rooms.length)+offset) % rooms.length;
-          if(isDone(ds, mi, "roomtask-"+rt.id)) coveredRoomTask.add(rt.id+"|"+roomIdx);
+          const room = rooms[roomIdx];
+          if(room) lc.roomtask[rt.id+"|"+room.roomId] = true;
         });
       }
     }
   }
+  STATE.lifetimeCoverage = lc;
+}
+// Registra en la memoria permanente (que no se borra al "Reiniciar reparto") el elemento exacto
+// que se acaba de completar, calculado igual que se le asignó ese día a esa persona.
+function recordLifetimeCoverage(dateStr, memberIdx, key){
+  if(!STATE.lifetimeCoverage) STATE.lifetimeCoverage = {cristal:{},puerta:{},mueble:{},roomtask:{}};
+  const di = dayIndexFor(dateStr);
+  const nMembers = Math.max(STATE.members.length,1);
+  if(key==='cristal'){
+    const list = flatten('cristales');
+    if(list.length){ const it = list[rotIndex(di,memberIdx,nMembers,list.length)]; if(it) STATE.lifetimeCoverage.cristal[it.itemId]=true; }
+  } else if(key==='puerta'){
+    const list = flatten('puertas');
+    if(list.length){ const it = list[rotIndex(di,memberIdx,nMembers,list.length)]; if(it) STATE.lifetimeCoverage.puerta[it.itemId]=true; }
+  } else if(key==='mueble'){
+    const list = flatten('muebles');
+    if(list.length){ const it = list[rotIndex(di,memberIdx,nMembers,list.length)]; if(it) STATE.lifetimeCoverage.mueble[it.itemId]=true; }
+  } else if(key.indexOf('roomtask-')===0){
+    const rtId = key.slice('roomtask-'.length);
+    const rooms = flatten('rooms');
+    const rtIdx = STATE.roomTasks.findIndex(rt=>rt.id===rtId);
+    if(rooms.length && rtIdx>=0){
+      const offset = Math.ceil(rooms.length*rtIdx/STATE.roomTasks.length);
+      const roomIdx = (rotIndex(di,memberIdx,nMembers,rooms.length)+offset) % rooms.length;
+      const room = rooms[roomIdx];
+      if(room) STATE.lifetimeCoverage.roomtask[rtId+"|"+room.roomId] = true;
+    }
+  }
+}
+function houseFullCoverage(){
+  if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
+  const lc = STATE.lifetimeCoverage;
+  const cristales = flatten('cristales');
+  const puertas = flatten('puertas');
+  const muebles = flatten('muebles');
+  const rooms = flatten('rooms');
 
   const floors = STATE.house.map(floor=>{
     const roomsOut = floor.rooms.map(room=>{
       const units = [];
       (room.cristales||[]).forEach(item=>{
-        const idx = cristales.findIndex(c=>c.itemId===item.id);
-        const done = idx>=0 && coveredCristal.has(idx);
-        units.push({label:item.name, done, min:item.min});
+        units.push({label:item.name, done: !!lc.cristal[item.id], min:item.min});
       });
       (room.puertas||[]).forEach(item=>{
-        const idx = puertas.findIndex(c=>c.itemId===item.id);
-        const done = idx>=0 && coveredPuerta.has(idx);
-        units.push({label:item.name, done, min:item.min});
+        units.push({label:item.name, done: !!lc.puerta[item.id], min:item.min});
       });
       (room.muebles||[]).forEach(item=>{
-        const idx = muebles.findIndex(c=>c.itemId===item.id);
-        const done = idx>=0 && coveredMueble.has(idx);
-        units.push({label:item.name, done, min:item.min});
+        units.push({label:item.name, done: !!lc.mueble[item.id], min:item.min});
       });
-      const roomIdx = rooms.findIndex(r=>r.roomId===room.id);
       STATE.roomTasks.forEach(rt=>{
-        const done = roomIdx>=0 && coveredRoomTask.has(rt.id+"|"+roomIdx);
-        units.push({label:rt.name, done, min:rt.min});
+        units.push({label:rt.name, done: !!lc.roomtask[rt.id+"|"+room.id], min:rt.min});
       });
       const doneCount = units.filter(u=>u.done).length;
       const minutesRemaining = units.filter(u=>!u.done).reduce((s,u)=>s+u.min,0);
@@ -3942,7 +3982,7 @@ function houseFullCoverage(){
   });
 
   const totalUnits = cristales.length + puertas.length + muebles.length + (rooms.length*STATE.roomTasks.length);
-  const doneUnits = coveredCristal.size + coveredPuerta.size + coveredMueble.size + coveredRoomTask.size;
+  const doneUnits = Object.keys(lc.cristal).length + Object.keys(lc.puerta).length + Object.keys(lc.mueble).length + Object.keys(lc.roomtask).length;
   const minutesRemaining = floors.reduce((s,f)=>s+f.rooms.reduce((s2,r)=>s2+r.minutesRemaining,0),0);
 
   return { totalUnits, doneUnits, minutesRemaining, floors };
