@@ -287,6 +287,10 @@ input,select{font-family:inherit;font-size:15px;}
       <h1>Tareas de hoy</h1>
       <div class="member-chip-row" id="memberChipsHoy"></div>
     </div>
+    <div class="card" style="padding:10px 12px;">
+      <div style="font-weight:700;font-size:12px;margin-bottom:6px;">¿Cómo está la ropa?</div>
+      <div class="floor-chips" id="laundryStatusHoy" style="margin-bottom:0;"></div>
+    </div>
     <div id="hoyContent"></div>
   </div>
 
@@ -483,6 +487,10 @@ input,select{font-family:inherit;font-size:15px;}
 
   <!-- COLADA -->
   <div class="view" id="view-colada">
+    <div class="card">
+      <h2>¿Cómo está la ropa?</h2>
+      <div class="floor-chips" id="laundryStatusColada" style="margin-bottom:0;"></div>
+    </div>
     <div class="card">
       <h2><span id="icoColada"></span> Colada</h2>
       <p class="muted">Tareas propias de la ropa, separadas de la limpieza general. Se reparten una a una entre la familia cada semana.</p>
@@ -1070,7 +1078,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0 };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1092,6 +1100,7 @@ if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAM
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
+if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -1978,6 +1987,7 @@ function toast(msg, duration){
 /* ======================= HOY ======================= */
 let selMemberIdx = 0;
 function renderHoy(){
+  renderLaundryStatus();
   const today = dateToStr(new Date());
   document.getElementById("todayDate").textContent = strToDate(today).toLocaleDateString('es-ES',{weekday:'long', day:'numeric', month:'long'});
   const wrap = document.getElementById("memberChipsHoy");
@@ -3427,7 +3437,21 @@ function chooseBgTheme(id){
 }
 
 /* ======================= COLADA ======================= */
+function renderLaundryStatus(){
+  const opts = [{v:"limpia", label:"🧺 Limpia"}, {v:"sucia", label:"🌀 Sucia"}];
+  const html = opts.map(o=>`<button class="floor-chip${STATE.laundryStatus===o.v?' active':''}" onclick="setLaundryStatus('${o.v}')">${o.label}</button>`).join("");
+  ["laundryStatusColada","laundryStatusHoy"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = html;
+  });
+}
+function setLaundryStatus(v){
+  STATE.laundryStatus = STATE.laundryStatus===v ? null : v;
+  save();
+  renderLaundryStatus();
+}
 function renderColada(){
+  renderLaundryStatus();
   const el = document.getElementById("laundryList");
   if(!STATE.laundry.length){ el.innerHTML = emptyState("basket","El cesto está que revienta","Añade la primera tarea de colada, antes de que la ropa gane la guerra."); return; }
   el.innerHTML = STATE.laundry.map(l=>`
@@ -3589,6 +3613,7 @@ if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAM
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
+if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
