@@ -328,6 +328,11 @@ input,select{font-family:inherit;font-size:15px;}
       <div id="rankingList"></div>
     </div>
     <div class="card">
+      <h2>Progreso de hoy</h2>
+      <p class="muted" id="progresoResumen"></p>
+      <div id="progresoMembers"></div>
+    </div>
+    <div class="card">
       <h2>Cuenta atrás de hoy</h2>
       <p class="muted">Solo cuenta lo de las estancias (ordenar, barrer y fregar, paredes) de hoy. Lo demás es relleno; esto es lo que de verdad decide si la casa está limpia hoy o solo lo parece.</p>
       <div id="houseCountdown"></div>
@@ -336,11 +341,6 @@ input,select{font-family:inherit;font-size:15px;}
       <h2>Cuenta atrás de la casa completa</h2>
       <p class="muted">No es por día, ni por semana, ni por mes: es el tiempo que falta para haber pasado, al menos una vez, por cada cristal, puerta, mueble y tarea de cada estancia de toda la casa.</p>
       <div id="houseFullCoverage"></div>
-    </div>
-    <div class="card">
-      <h2>Progreso de hoy</h2>
-      <p class="muted" id="progresoResumen"></p>
-      <div id="progresoMembers"></div>
     </div>
   </div>
 
@@ -407,7 +407,7 @@ input,select{font-family:inherit;font-size:15px;}
     </div>
     <div class="card">
       <h2>¿Cómo va esto del reparto?</h2>
-      <p class="muted">Tranquilo, no es tan lioso como suena. Cada día te tocan un cristal, una puerta y un mueble (van rotando solos por toda la casa, así que tarde o temprano te tocan todos, sin favoritismos). Además, una pizca de orden, barrido y paredes en alguna estancia. Cada semana se suma una tarea de colada y otra de la lista de "Otras tareas". La meta: 20 minutos + 3 microtareas al día. Ni un minuto más te vamos a pedir, pero si haces de más... el ranking se entera, y la fama también.</p>
+      <p class="muted">Tranquilo, no es tan lioso como suena. Cada día te tocan un cristal, una puerta y un mueble (van rotando solos por toda la casa, así que tarde o temprano te tocan todos, sin favoritismos). Además, una pizca de orden, barrido y paredes en alguna estancia. Cada semana se suma una tarea de colada y otra de la lista de "Otras tareas". La meta: 20 minutos + 2 microtareas diarias + 2 microtareas más. Ni un minuto más te vamos a pedir, pero si haces de más... el ranking se entera, y la fama también.</p>
     </div>
   </div>
 
@@ -424,7 +424,7 @@ input,select{font-family:inherit;font-size:15px;}
         <label>Tipo</label>
         <select id="vacType">
           <option value="vacaciones">Vacaciones</option>
-          <option value="trabajo">Día de trabajo fuera</option>
+          <option value="trabajo">Trabajo</option>
         </select>
       </div>
       <p class="muted">Toca todos los días que quieras marcar (pueden ser sueltos, no hace falta que sean seguidos).</p>
@@ -450,10 +450,13 @@ input,select{font-family:inherit;font-size:15px;}
       <h2><span id="icoLogrosFam"></span> Logros en familia</h2>
       <p class="muted">Para cuando, por una vez, todos cumplen el mismo día. Momento histórico, enmárquenlo.</p>
       <div class="badge-grid" id="familyBadges"></div>
+      <div class="badge-group-title">Premios de familia</div>
+      <div id="familyShopContent"></div>
     </div>
     <div class="card">
       <h2>Logros individuales</h2>
-      <p class="muted">20 min + 3 microtareas al día, varios días seguidos. Cuanta más racha, menos margen para la excusa de "mañana lo hago".</p>
+      <p class="muted">20 min + 2 microtareas diarias + 2 microtareas más, varios días seguidos. Cuanta más racha, menos margen para la excusa de "mañana lo hago".</p>
+      <div class="member-chip-row" id="memberChipsLogros" style="margin-bottom:10px;"></div>
       <div id="logrosContent"></div>
     </div>
     <div class="card">
@@ -462,18 +465,14 @@ input,select{font-family:inherit;font-size:15px;}
       <div id="wallOfFame"></div>
     </div>
     <div class="card">
-      <h2>Tienda de familia</h2>
-      <p class="muted">Para cuando entre todos juntáis suficiente. Se paga con la suma de los puntos de toda la casa.</p>
-      <div id="familyShopContent"></div>
-    </div>
-    <div class="card">
-      <h2>Gestionar la tienda</h2>
+      <h2>Tienda</h2>
       <p class="muted">Añade tus propias recompensas, con el coste en puntos que le pongas según lo difícil o especial que sea.</p>
       <div id="rewardCatalogAdmin"></div>
       <div class="row" style="margin-top:8px;">
         <input type="text" id="newRewardName" placeholder="Ej: Fin de semana sin tareas" style="flex:1;">
         <input type="number" min="1" id="newRewardCost" placeholder="Puntos" style="width:80px;">
       </div>
+      <input type="text" id="newRewardHow" placeholder="Cómo se consigue (opcional, ej: limpiando toda la casa una vez)" style="width:100%;margin-top:6px;">
       <select id="newRewardScope" style="margin-top:6px;width:100%;">
         <option value="individual">Para quien la compre</option>
         <option value="family">Para toda la familia</option>
@@ -953,7 +952,12 @@ const MEMBER_COLORS = ["#33475B","#A6402C","#5C7350","#7A5C3E","#6B5478","#3E737
 const AVATAR_LIST = ["avatar1","avatar2","avatar3","avatar4","avatar5","avatar6","avatar7","avatar8"];
 function memberAvatarHTML(m, size){
   size = size || 22;
-  if(m.avatar) return `<div class="member-dot" style="background:none;border:2px solid ${m.color};width:${size}px;height:${size}px;">${pixelIcon(m.avatar, Math.round(size*0.72))}</div>`;
+  if(m.avatar){
+    const filled = m.avatarFill === 'filled';
+    const bg = filled ? m.color : 'none';
+    const border = `2px solid ${m.color}`;
+    return `<div class="member-dot" style="background:${bg};border:${border};width:${size}px;height:${size}px;">${pixelIcon(m.avatar, Math.round(size*0.72))}</div>`;
+  }
   return `<div class="member-dot" style="background:${m.color};width:${size}px;height:${size}px;">${m.name[0].toUpperCase()}</div>`;
 }
 
@@ -1106,7 +1110,7 @@ if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
 if(!STATE.vacations) STATE.vacations = [];
 if(!STATE.laundryLoads) STATE.laundryLoads = [];
-STATE.members.forEach((m,i)=>{ if(!m.id) m.id = "m"+Date.now()+"-"+i; if(m.avatar===undefined) m.avatar = null; if(m.linkedUid===undefined) m.linkedUid = null; if(m.linkedEmail===undefined) m.linkedEmail = null; });
+STATE.members.forEach((m,i)=>{ if(!m.id) m.id = "m"+Date.now()+"-"+i; if(m.avatar===undefined) m.avatar = null; if(m.linkedUid===undefined) m.linkedUid = null; if(m.linkedEmail===undefined) m.linkedEmail = null; if(!m.avatarFill) m.avatarFill = "transparent"; });
 if(!STATE.settings) STATE.settings = {...DEFAULT_SETTINGS};
 else {
   const oldSettings = STATE.settings;
@@ -1489,6 +1493,36 @@ function microtareasForMember(dateStr, memberIdx){
   const rotating = todaysMicrotareas(dateStr, memberIdx).map(mt=>({icon:"sparkle", tipo:"Microtarea", title: mt.name, min:0, key:"micro-"+mt.id, isMicro:true}));
   return [...dailyMicrotareas(dateStr, memberIdx), ...rotating];
 }
+function openHelpHouseModal(){
+  const today = dateToStr(new Date());
+  const body = document.getElementById("modalBody");
+  let html = `<button class="close-x" onclick="closeModal()">✕</button><h3>Tareas de la casa pendientes</h3><p class="muted">De otros miembros, o de quien esté de baja/ausente hoy, que todavía no se han hecho. Márcalas si las haces tú — quedan a nombre de quien le tocaban.</p>`;
+  let anyTask = false;
+  STATE.members.forEach((m,mi)=>{
+    if(mi===selMemberIdx) return;
+    const excused = isExcused(today, mi);
+    const tasks = dailyTasksForMember(today, mi).concat(microtareasForMember(today, mi));
+    const pending = tasks.filter(t=>!isDone(today, mi, t.key));
+    if(!pending.length) return;
+    anyTask = true;
+    html += `<div class="section-title" style="margin-top:10px;">${m.name}${excused?' <span class="muted" style="font-weight:400;">(ausente hoy)</span>':''}</div>`;
+    pending.forEach(t=>{
+      html += `<div class="task" style="padding:5px 2px;" onclick="helpWithTask(${mi},'${t.key}')">
+        <div class="check"></div>
+        <div class="ticon">${pixelIcon(t.icon,14)}</div>
+        <div class="tinfo"><div class="ttitle">${t.tipo}</div><div class="tsub">${t.title}</div></div>
+        <div class="ttime">${t.min} min</div>
+      </div>`;
+    });
+  });
+  if(!anyTask) html += `<p class="muted">No queda ninguna tarea pendiente de nadie más. Todo bajo control.</p>`;
+  body.innerHTML = html;
+  openModal();
+}
+function helpWithTask(memberIdx, key){
+  toggleDoneUI(dateToStr(new Date()), memberIdx, key);
+  openHelpHouseModal();
+}
 function openMoreMicrotareas(){
   const today = dateToStr(new Date());
   const featuredIds = todaysMicrotareas(today, selMemberIdx).map(mt=>mt.id);
@@ -1742,12 +1776,13 @@ function addRewardCatalogItem(){
   const nameInput = document.getElementById("newRewardName");
   const costInput = document.getElementById("newRewardCost");
   const scopeInput = document.getElementById("newRewardScope");
+  const howInput = document.getElementById("newRewardHow");
   const name = nameInput.value.trim();
   const cost = parseInt(costInput.value);
   if(!name){ toast("Ponle un nombre"); return; }
   if(!cost || cost<1){ toast("Ponle un coste en puntos"); return; }
-  STATE.rewardCatalog.push({ id:"r"+Date.now(), name, cost, scope: scopeInput.value });
-  nameInput.value=""; costInput.value="";
+  STATE.rewardCatalog.push({ id:"r"+Date.now(), name, cost, scope: scopeInput.value, how: howInput?howInput.value.trim():"" });
+  nameInput.value=""; costInput.value=""; if(howInput) howInput.value="";
   save(); renderLogros(); toast("Recompensa añadida a la tienda");
 }
 function removeRewardCatalogItem(id){
@@ -1989,6 +2024,7 @@ function renderHoy(){
       ${STATE.microtareas.length>3 ? `<button class="btn small secondary" onclick="openMoreMicrotareas()">+ Más microtareas</button>` : ``}
     </div>`;
   }
+  html += `<button class="btn secondary block" style="margin-top:8px;" onclick="openHelpHouseModal()">🤝 Ayudar con tareas de la casa</button>`;
 
   const wateringToday = s.tasks.filter(t=>t.key.indexOf('plant-')===0 && !isDone(today, selMemberIdx, t.key));
   if(wateringToday.length){
@@ -2644,7 +2680,7 @@ function addMember(){
   const input = document.getElementById("newMemberName");
   const name = input.value.trim();
   if(!name){ toast("Escribe un nombre"); return; }
-  STATE.members.push({ id:"m"+Date.now(), name, color: MEMBER_COLORS[STATE.members.length % MEMBER_COLORS.length], avatar: null });
+  STATE.members.push({ id:"m"+Date.now(), name, color: MEMBER_COLORS[STATE.members.length % MEMBER_COLORS.length], avatar: null, avatarFill: "transparent" });
   input.value="";
   save(); renderFamilia(); updateHud(); toast("Nuevo recluta en la casa");
 }
@@ -2669,6 +2705,9 @@ function openEditMember(i){
     <div class="field"><label>Avatar</label>
       <div class="row" id="editMemberAvatars"></div>
     </div>
+    <label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:12px;">
+      <input type="checkbox" id="editMemberFillTransparent" ${m.avatarFill==='filled'?'':'checked'} onchange="toggleMemberAvatarFill()"> Relleno transparente (solo el contorno)
+    </label>
     <button class="btn block" onclick="confirmEditMember()">Guardar cambios</button>
   `;
   const colorsEl = document.getElementById("editMemberColors");
@@ -2684,6 +2723,12 @@ function openEditMember(i){
 function selectMemberColor(c){
   STATE.members[editMemberIdx].color = c;
   openEditMember(editMemberIdx);
+}
+function toggleMemberAvatarFill(){
+  const checked = document.getElementById("editMemberFillTransparent").checked;
+  STATE.members[editMemberIdx].avatarFill = checked ? "transparent" : "filled";
+  save();
+  renderFamilia();
 }
 function selectMemberAvatar(a){
   STATE.members[editMemberIdx].avatar = a;
@@ -3011,6 +3056,7 @@ function getSpeechRecognitionCtor(){
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
 }
 let voiceFullTranscript = "";
+let voiceUserStopped = false;
 function toggleVoiceShopping(){
   const Ctor = getSpeechRecognitionCtor();
   const btn = document.getElementById("voiceShopBtn");
@@ -3019,11 +3065,13 @@ function toggleVoiceShopping(){
     return;
   }
   if(voiceListening){
+    voiceUserStopped = true;
     try{ voiceRecognition.stop(); }catch(e){}
     return;
   }
   try{
     voiceFullTranscript = "";
+    voiceUserStopped = false;
     voiceRecognition = new Ctor();
     voiceRecognition.lang = "es-ES";
     voiceRecognition.continuous = true;
@@ -3043,14 +3091,19 @@ function toggleVoiceShopping(){
     };
     voiceRecognition.onerror = (event)=>{
       if(event.error === 'not-allowed' || event.error === 'service-not-allowed'){
+        voiceUserStopped = true;
         toast("No te hemos podido escuchar: falta permiso de micrófono.");
       } else if(event.error === 'no-speech'){
-        toast("Silencio total. ¿Sigues ahí?");
+        // silencio momentáneo mientras piensas: no lo tratamos como un error, solo seguimos escuchando
       } else if(event.error !== 'aborted'){
         toast("El micrófono se ha hecho el remolón. Prueba otra vez o escríbelo a mano.");
       }
     };
     voiceRecognition.onend = ()=>{
+      if(!voiceUserStopped){
+        // el navegador ha cortado por una pausa, pero tú no has tocado el botón: seguimos sin perder nada de lo dicho
+        try{ voiceRecognition.start(); return; }catch(e){}
+      }
       voiceListening = false;
       btn.textContent = "🎤 Dictar la compra";
       btn.style.borderColor = "";
@@ -3996,10 +4049,17 @@ function renderWallOfFame(){
       </div>`).join("")}</div>` : ``}
   `;
 }
+let selLogrosMemberIdx = 0;
 function renderLogros(){
   renderWallOfFame();
   const el = document.getElementById("logrosContent");
-  if(!STATE.members.length){ el.innerHTML = emptyState("family","Sin equipo, sin progreso","Añade a la familia en Ajustes primero."); return; }
+  const chipsEl = document.getElementById("memberChipsLogros");
+  if(!STATE.members.length){
+    if(chipsEl) chipsEl.innerHTML = "";
+    el.innerHTML = emptyState("family","Sin equipo, sin progreso","Añade a la familia en Ajustes primero.");
+    renderFamilyShop(); renderRewardCatalogAdmin();
+    return;
+  }
   checkFamilyBadges();
   const familyEl = document.getElementById("familyBadges");
   if(familyEl){
@@ -4015,63 +4075,75 @@ function renderLogros(){
     }).join("");
   }
 
-  el.innerHTML = STATE.members.map((m,mi)=>{
-    const streak = currentStreak(mi);
-    const st = getStats(mi);
-    const next = BADGES.find(b=>!hasEarned(mi,b.id));
-    const badgeTile = (b, earned, sub)=>{
-      const click = earned ? `onclick="downloadDiploma('${m.name.replace(/'/g,"\\'")}','${b.name.replace(/'/g,"\\'")}','${STATE.earned[earnedKey(mi,b.id)]||new Date().toISOString()}')"` : "";
-      return `<div class="badge ${earned?'earned':''}" ${click} style="${earned?'cursor:pointer;':''}">
-        <div class="bicon">${pixelIcon(b.icon,20)}</div><div class="bname">${b.name}</div><div class="bdesc">${sub}</div>
-      </div>`;
-    };
-    const rachaBadges = BADGES.map(b=> badgeTile(b, hasEarned(mi,b.id), b.min+"d") ).join("");
-    const constBadges = CUMULATIVE_BADGES.map(b=> badgeTile(b, hasEarned(mi,b.id), Math.min(st[b.field]||0,b.min)+"/"+b.min) ).join("");
-    const comboBadges = COMBO_BADGES.map(c=>{
-      const earned = hasEarnedComboType(mi, c.id);
-      const count = countEarnedComboType(mi, c.id);
-      return badgeTile(c, earned, count>1?'x'+count:c.desc);
-    }).join("");
-    const myPrizes = STATE.prizes[m.id] || [];
-    const prizesHTML = myPrizes.length ? myPrizes.map(p=>`
-      <div class="badge ${p.used?'':'earned'}" style="width:auto;padding:8px 10px;text-align:left;display:flex;align-items:center;gap:8px;">
-        <div class="bicon" style="margin:0;">${pixelIcon('gem',18)}</div>
-        <div style="flex:1;">
-          <div class="bname" style="font-size:10.5px;">${p.label}</div>
-          <div class="bdesc">${p.used?'Ya usado':'Sin usar'}</div>
-        </div>
-        ${!p.used ? `<button class="btn small" onclick="openUsePrize('${m.id}','${p.id}')">Usar</button>` : ``}
-      </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Sin premios todavía. Gana la semana en minipuntos, o cómprate uno en la tienda de ahí abajo.</p>`;
-    const balance = spendablePoints(mi);
-    const indivCatalog = STATE.rewardCatalog.filter(r=>r.scope==='individual');
-    const shopHTML = indivCatalog.length ? indivCatalog.map(r=>{
-      const canAfford = balance>=r.cost;
-      return `<div class="chore-row">
-        <div class="cname">${r.name}</div>
-        <span class="muted" style="font-size:10.5px;margin-right:6px;">${r.cost} pts</span>
-        <button class="btn small" ${canAfford?'':'disabled style="opacity:.4;"'} onclick="redeemReward(${mi},'${r.id}')">Canjear</button>
-      </div>`;
-    }).join("") : `<p class="muted" style="font-size:10.5px;">Sin recompensas individuales en la tienda todavía.</p>`;
-    return `<div style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
-        ${memberAvatarHTML(m)}
-        <strong>${m.name}</strong>
-        <span class="muted">· racha ${streak}d · ${st.totalMinutes} min totales</span>
-      </div>
-      <div class="badge-group-title">Rachas</div>
-      <div class="badge-grid">${rachaBadges}</div>
-      <div class="badge-group-title">Constancia</div>
-      <div class="badge-grid">${constBadges}</div>
-      <div class="badge-group-title">Combos</div>
-      <div class="badge-grid">${comboBadges}</div>
-      <div class="badge-group-title">Premios</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">${prizesHTML}</div>
-      <div class="badge-group-title">Tienda · ${balance} pts disponibles</div>
-      <div style="display:flex;flex-direction:column;gap:4px;">${shopHTML}</div>
-      <p class="muted" style="margin-top:4px;font-size:9.5px;">Toca una medalla conseguida para descargar el diploma.</p>
-      ${next ? `<p class="muted" style="margin-top:6px;">Próxima racha: <strong>${next.name}</strong> (faltan ${Math.max(0,next.min-streak)} días)</p>` : ``}
+  if(selLogrosMemberIdx>=STATE.members.length) selLogrosMemberIdx = 0;
+  if(chipsEl){
+    chipsEl.innerHTML = "";
+    STATE.members.forEach((m,i)=>{
+      const c = document.createElement("button");
+      c.className = "member-chip"+(i===selLogrosMemberIdx?" sel":"");
+      c.textContent = m.name;
+      c.onclick = ()=>{ selLogrosMemberIdx=i; renderLogros(); };
+      chipsEl.appendChild(c);
+    });
+  }
+
+  const mi = selLogrosMemberIdx;
+  const m = STATE.members[mi];
+  const streak = currentStreak(mi);
+  const st = getStats(mi);
+  const next = BADGES.find(b=>!hasEarned(mi,b.id));
+  const badgeTile = (b, earned, sub)=>{
+    const click = earned ? `onclick="downloadDiploma('${m.name.replace(/'/g,"\\'")}','${b.name.replace(/'/g,"\\'")}','${STATE.earned[earnedKey(mi,b.id)]||new Date().toISOString()}')"` : "";
+    return `<div class="badge ${earned?'earned':''}" ${click} style="${earned?'cursor:pointer;':''}">
+      <div class="bicon">${pixelIcon(b.icon,20)}</div><div class="bname">${b.name}</div><div class="bdesc">${sub}</div>
     </div>`;
+  };
+  const rachaBadges = BADGES.map(b=> badgeTile(b, hasEarned(mi,b.id), b.min+"d") ).join("");
+  const constBadges = CUMULATIVE_BADGES.map(b=> badgeTile(b, hasEarned(mi,b.id), Math.min(st[b.field]||0,b.min)+"/"+b.min) ).join("");
+  const comboBadges = COMBO_BADGES.map(c=>{
+    const earned = hasEarnedComboType(mi, c.id);
+    const count = countEarnedComboType(mi, c.id);
+    return badgeTile(c, earned, count>1?'x'+count:c.desc);
   }).join("");
+  const myPrizes = STATE.prizes[m.id] || [];
+  const prizesHTML = myPrizes.length ? myPrizes.map(p=>`
+    <div class="badge ${p.used?'':'earned'}" style="width:auto;padding:8px 10px;text-align:left;display:flex;align-items:center;gap:8px;">
+      <div class="bicon" style="margin:0;">${pixelIcon('gem',18)}</div>
+      <div style="flex:1;">
+        <div class="bname" style="font-size:10.5px;">${p.label}</div>
+        <div class="bdesc">${p.used?'Ya usado':'Sin usar'}</div>
+      </div>
+      ${!p.used ? `<button class="btn small" onclick="openUsePrize('${m.id}','${p.id}')">Usar</button>` : ``}
+    </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Sin premios todavía. Gana la semana en minipuntos, o cómprate uno en la tienda de aquí abajo.</p>`;
+  const balance = spendablePoints(mi);
+  const indivCatalog = STATE.rewardCatalog.filter(r=>r.scope==='individual');
+  const shopHTML = indivCatalog.length ? indivCatalog.map(r=>{
+    const canAfford = balance>=r.cost;
+    return `<div class="chore-row" style="align-items:flex-start;">
+      <div class="cname">${r.name}${r.how?`<div class="muted" style="font-size:9.5px;font-weight:400;margin-top:1px;">${r.how}</div>`:''}</div>
+      <span class="muted" style="font-size:10.5px;margin-right:6px;white-space:nowrap;">${r.cost} pts</span>
+      <button class="btn small" ${canAfford?'':'disabled style="opacity:.4;"'} onclick="redeemReward(${mi},'${r.id}')">Canjear</button>
+    </div>`;
+  }).join("") : `<p class="muted" style="font-size:10.5px;">Sin recompensas individuales en la tienda todavía.</p>`;
+  el.innerHTML = `<div>
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
+      ${memberAvatarHTML(m)}
+      <strong>${m.name}</strong>
+      <span class="muted">· racha ${streak}d · ${st.totalMinutes} min totales</span>
+    </div>
+    <div class="badge-group-title">Rachas</div>
+    <div class="badge-grid">${rachaBadges}</div>
+    <div class="badge-group-title">Constancia</div>
+    <div class="badge-grid">${constBadges}</div>
+    <div class="badge-group-title">Combos</div>
+    <div class="badge-grid">${comboBadges}</div>
+    <div class="badge-group-title">Premios</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">${prizesHTML}</div>
+    <div class="badge-group-title">Tienda · ${balance} pts disponibles</div>
+    <div style="display:flex;flex-direction:column;gap:4px;">${shopHTML}</div>
+    <p class="muted" style="margin-top:4px;font-size:9.5px;">Toca una medalla conseguida para descargar el diploma.</p>
+    ${next ? `<p class="muted" style="margin-top:6px;">Próxima racha: <strong>${next.name}</strong> (faltan ${Math.max(0,next.min-streak)} días)</p>` : ``}
+  </div>`;
   renderFamilyShop();
   renderRewardCatalogAdmin();
 }
@@ -4082,9 +4154,9 @@ function renderFamilyShop(){
   const familyCatalog = STATE.rewardCatalog.filter(r=>r.scope==='family');
   const shopHTML = familyCatalog.length ? familyCatalog.map(r=>{
     const canAfford = balance>=r.cost;
-    return `<div class="chore-row">
-      <div class="cname">${r.name}</div>
-      <span class="muted" style="font-size:10.5px;margin-right:6px;">${r.cost} pts</span>
+    return `<div class="chore-row" style="align-items:flex-start;">
+      <div class="cname">${r.name}${r.how?`<div class="muted" style="font-size:9.5px;font-weight:400;margin-top:1px;">${r.how}</div>`:''}</div>
+      <span class="muted" style="font-size:10.5px;margin-right:6px;white-space:nowrap;">${r.cost} pts</span>
       <button class="btn small" ${canAfford?'':'disabled style="opacity:.4;"'} onclick="redeemReward(0,'${r.id}')">Canjear</button>
     </div>`;
   }).join("") : `<p class="muted" style="font-size:10.5px;">Sin recompensas familiares en la tienda todavía.</p>`;
