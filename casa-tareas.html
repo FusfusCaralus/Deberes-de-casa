@@ -433,12 +433,8 @@ input,select{font-family:inherit;font-size:15px;}
       <h2>¿Cómo va esto del reparto?</h2>
       <p class="muted">Tranquilo, no es tan lioso como suena. Cada día te tocan un cristal, una puerta y un mueble (van rotando solos por toda la casa, así que tarde o temprano te tocan todos, sin favoritismos). Además, una pizca de orden, barrido y paredes en alguna estancia. Cada semana se suma una tarea de colada y otra de la lista de "Otras tareas". La meta: 20 minutos + 2 microtareas diarias + 2 microtareas más. Ni un minuto más te vamos a pedir, pero si haces de más... el ranking se entera, y la fama también.</p>
     </div>
-  </div>
-
-  <!-- AUSENCIAS -->
-  <div class="view" id="view-ausencias">
     <div class="card">
-      <h2>Marcar días</h2>
+      <h2>Marcar días de ausencia</h2>
       <p class="muted">Vacaciones o día de trabajo fuera (24h). Marca esos días y esa persona queda oficialmente libre de sospecha.</p>
       <div class="field">
         <label>Persona</label>
@@ -2119,7 +2115,7 @@ const MENU = [
     {view:"plantas", icon:"leaf", label:"Plantas"}, {view:"animales", icon:"paw", label:"Animales"}
   ]},
   { id:"ajustes", icon:"settings", label:"Ajustes", subs:[
-    {view:"familia", icon:"family", label:"Familia"}, {view:"ausencias", icon:"suitcase", label:"Ausencias"}, {view:"ajustes", icon:"clock", label:"Tiempos"}, {view:"apariencia", icon:"palette", label:"Apariencia"}, {view:"backup", icon:"save", label:"Copia de seguridad"}
+    {view:"familia", icon:"family", label:"Familia"}, {view:"ajustes", icon:"clock", label:"Tiempos"}, {view:"apariencia", icon:"palette", label:"Apariencia"}, {view:"backup", icon:"save", label:"Copia de seguridad"}
   ]}
 ];
 let currentView = "hoy";
@@ -2166,7 +2162,6 @@ function setView(v){
   if(v==="casa") renderCasa();
   if(v==="colada") renderColada();
   if(v==="familia") renderFamilia();
-  if(v==="ausencias") renderAusencias();
   if(v==="logros") renderLogros();
   if(v==="plantas") renderPlantas();
   if(v==="animales") renderAnimales();
@@ -2876,6 +2871,7 @@ function confirmAddRoom(floorId){
 
 /* ======================= FAMILIA ======================= */
 function renderFamilia(){
+  renderAusencias();
   const el = document.getElementById("memberList");
   if(!STATE.members.length){ el.innerHTML = emptyState("home","Casa fantasma","Añade a quien viva aquí de verdad. Sin nombres no hay a quien echarle la culpa."); return; }
   const myUid = (fbAuth && fbAuth.currentUser) ? fbAuth.currentUser.uid : null;
