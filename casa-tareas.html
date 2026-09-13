@@ -323,9 +323,14 @@ input,select{font-family:inherit;font-size:15px;}
       <div id="rankingList"></div>
     </div>
     <div class="card">
-      <h2>Cuenta atrás de la casa</h2>
-      <p class="muted">Solo cuenta lo de las estancias (ordenar, barrer y fregar, paredes). Lo demás es relleno; esto es lo que de verdad decide si la casa está limpia o solo lo parece.</p>
+      <h2>Cuenta atrás de hoy</h2>
+      <p class="muted">Solo cuenta lo de las estancias (ordenar, barrer y fregar, paredes) de hoy. Lo demás es relleno; esto es lo que de verdad decide si la casa está limpia hoy o solo lo parece.</p>
       <div id="houseCountdown"></div>
+    </div>
+    <div class="card">
+      <h2>Cuenta atrás de la casa completa</h2>
+      <p class="muted">No es por día, ni por semana, ni por mes: es el tiempo que falta para haber pasado, al menos una vez, por cada cristal, puerta, mueble y tarea de cada estancia de toda la casa.</p>
+      <div id="houseFullCoverage"></div>
     </div>
     <div class="card">
       <h2>Progreso de hoy</h2>
@@ -1402,10 +1407,15 @@ function allBathrooms(){
 }
 function dailyMicrotareas(dateStr, memberIdx){
   const list = STATE.microtareasDiarias || [];
-  if(!list.length) return [];
+  const n = list.length;
+  if(!n) return [];
+  const take = Math.min(2, n);
   const di = dayIndexFor(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
-  return list.map(mt=>{
+  const offset = ((di*nMembers + memberIdx) % n + n) % n;
+  const featured = [];
+  for(let i=0;i<take;i++) featured.push(list[(offset+i)%n]);
+  return featured.map(mt=>{
     if(mt.rotateBathrooms){
       const bathrooms = allBathrooms();
       if(!bathrooms.length) return null;
@@ -1419,7 +1429,7 @@ function dailyMicrotareas(dateStr, memberIdx){
 function todaysMicrotareas(dateStr, memberIdx){
   const n = STATE.microtareas.length;
   if(!n) return [];
-  const take = Math.min(1, n);
+  const take = Math.min(2, n);
   const di = dayIndexFor(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const offset = ((di*nMembers + memberIdx) % n + n) % n;
@@ -3558,6 +3568,89 @@ function renderRankingList(){
       <button class="btn small" style="${hasPendingCongrats(r.m.id)?'background:var(--pine);color:#fff;border:1px solid var(--pine);':'background:none;color:var(--pine);border:1px solid var(--pine);'}" onclick="sendCongrats(${r.i})" title="Felicitar">🎉</button>
     </div>`).join("");
 }
+function houseFullCoverage(){
+  const cristales = flatten('cristales');
+  const puertas = flatten('puertas');
+  const muebles = flatten('muebles');
+  const rooms = flatten('rooms');
+  const nMembers = Math.max(STATE.members.length,1);
+  const todayDi = dayIndexFor(dateToStr(new Date()));
+  const maxLookback = 730; // no hace falta mirar más de 2 años atrás
+  const startDi = Math.max(0, todayDi - maxLookback);
+
+  const coveredCristal = new Set(), coveredPuerta = new Set(), coveredMueble = new Set(), coveredRoomTask = new Set();
+
+  for(let di=startDi; di<=todayDi; di++){
+    const ds = dateFromDayIndex(di);
+    for(let mi=0; mi<STATE.members.length; mi++){
+      if(isExcused(ds, mi)) continue;
+      if(cristales.length){
+        const idx = rotIndex(di, mi, nMembers, cristales.length);
+        if(isDone(ds, mi, 'cristal')) coveredCristal.add(idx);
+      }
+      if(puertas.length){
+        const idx = rotIndex(di, mi, nMembers, puertas.length);
+        if(isDone(ds, mi, 'puerta')) coveredPuerta.add(idx);
+      }
+      if(muebles.length){
+        const idx = rotIndex(di, mi, nMembers, muebles.length);
+        if(isDone(ds, mi, 'mueble')) coveredMueble.add(idx);
+      }
+      if(rooms.length && STATE.roomTasks.length){
+        STATE.roomTasks.forEach((rt,rtIdx)=>{
+          const offset = Math.ceil(rooms.length*rtIdx/STATE.roomTasks.length);
+          const roomIdx = (rotIndex(di,mi,nMembers,rooms.length)+offset) % rooms.length;
+          if(isDone(ds, mi, "roomtask-"+rt.id)) coveredRoomTask.add(rt.id+"|"+roomIdx);
+        });
+      }
+    }
+  }
+
+  let minutesRemaining = 0;
+  cristales.forEach((it,idx)=>{ if(!coveredCristal.has(idx)) minutesRemaining += it.min; });
+  puertas.forEach((it,idx)=>{ if(!coveredPuerta.has(idx)) minutesRemaining += it.min; });
+  muebles.forEach((it,idx)=>{ if(!coveredMueble.has(idx)) minutesRemaining += it.min; });
+  const roomTaskUnits = [];
+  rooms.forEach((r,roomIdx)=>{
+    STATE.roomTasks.forEach(rt=>{
+      const done = coveredRoomTask.has(rt.id+"|"+roomIdx);
+      if(!done) minutesRemaining += rt.min;
+      roomTaskUnits.push({label: rt.name+" — "+r.label, done});
+    });
+  });
+
+  const totalUnits = cristales.length + puertas.length + muebles.length + roomTaskUnits.length;
+  const doneUnits = coveredCristal.size + coveredPuerta.size + coveredMueble.size + coveredRoomTask.size;
+
+  return {
+    totalUnits, doneUnits, minutesRemaining,
+    cristales: cristales.map((it,idx)=>({label:it.label, done:coveredCristal.has(idx)})),
+    puertas: puertas.map((it,idx)=>({label:it.label, done:coveredPuerta.has(idx)})),
+    muebles: muebles.map((it,idx)=>({label:it.label, done:coveredMueble.has(idx)})),
+    roomTaskUnits
+  };
+}
+function renderHouseFullCoverage(){
+  const el = document.getElementById("houseFullCoverage");
+  if(!el) return;
+  if(!STATE.members.length){ el.innerHTML = emptyState("home","Sin equipo, sin ciclo","Añade a la familia primero."); return; }
+  const cov = houseFullCoverage();
+  const pct = cov.totalUnits>0 ? Math.round(cov.doneUnits/cov.totalUnits*100) : 100;
+  const chip = (label, done) => `<span class="pill" style="margin:2px 3px 2px 0;display:inline-block;background:${done?'var(--line-solid)':'var(--pine)'};color:${done?'var(--muted)':'#fff'};${done?'text-decoration:line-through;opacity:.65;':''}font-size:9.5px;font-weight:500;">${label}</span>`;
+  el.innerHTML = `
+    <div class="streak-box">
+      <div class="streak-num">${cov.minutesRemaining}</div>
+      <div><div style="font-weight:700;font-size:13px;">minutos para haber pasado por toda la casa</div><div class="streak-lbl">${cov.doneUnits}/${cov.totalUnits} tareas ya cubiertas al menos una vez (${pct}%)</div></div>
+    </div>
+    <div class="bar-outer"><div class="bar-inner ${hpBarClass(pct)}" style="width:${pct}%"></div></div>
+    <div style="margin-top:10px;">
+      ${cov.cristales.length?`<div class="badge-group-title">Cristales</div><div>${cov.cristales.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
+      ${cov.puertas.length?`<div class="badge-group-title">Puertas</div><div>${cov.puertas.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
+      ${cov.muebles.length?`<div class="badge-group-title">Muebles</div><div>${cov.muebles.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
+      ${cov.roomTaskUnits.length?`<div class="badge-group-title">Tareas de estancia</div><div>${cov.roomTaskUnits.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
+    </div>
+  `;
+}
 function houseRoomTasksProgress(dateStr){
   let total=0, done=0;
   STATE.members.forEach((m,i)=>{
@@ -3587,6 +3680,7 @@ function renderProgreso(){
   const today = dateToStr(new Date());
   renderRankingList();
   renderHouseCountdown(today);
+  renderHouseFullCoverage();
   if(!STATE.members.length){
     document.getElementById("progresoResumen").textContent = "";
     document.getElementById("progresoMembers").innerHTML = emptyState("family","Sin equipo, sin progreso","Añade a la familia en Ajustes primero.");
