@@ -1101,7 +1101,6 @@ if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({.
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
-if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -1174,6 +1173,7 @@ STATE.house.forEach(f=>{
   });
 });
 STATE.chores.forEach(c=>{ if(c.min===undefined) c.min = getOtherTime('extraChore',20); if(!c.freq) c.freq = "semanal"; });
+if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
 }
 applyMigrations();
 save();
@@ -2042,6 +2042,7 @@ function toggleDone(dateStr, memberIdx, taskKey){
 /* ======================= AUSENCIAS (vacaciones / trabajo fuera) ======================= */
 function isExcused(dateStr, memberIdx){
   const mid = memberId(memberIdx);
+  if(!Array.isArray(STATE.vacations)) STATE.vacations = [];
   return STATE.vacations.some(v => (v.memberId===mid || v.memberId==='all') && dateStr>=v.start && dateStr<=v.end);
 }
 
@@ -3764,11 +3765,11 @@ if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({.
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
-if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
       (STATE.members||[]).forEach((m,i)=>{ if(!m.id) m.id = "m"+Date.now()+"-"+i; });
+      if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
       STATE.settingsUpdatedAt = new Date().toISOString();
       save();
       applyTheme(STATE.theme);
@@ -3929,6 +3930,7 @@ function renderRankingList(){
     </div>`).join("");
 }
 function backfillLifetimeCoverage(){
+  if(!Array.isArray(STATE.roomTasks)) STATE.roomTasks = DEFAULT_ROOM_TASKS.map(rt=>({...rt}));
   const cristales = flatten('cristales');
   const puertas = flatten('puertas');
   const muebles = flatten('muebles');
