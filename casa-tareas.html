@@ -750,6 +750,22 @@ function iconFor(room){
 }
 const ROOM_ICON_CHOICES = ["home","bed","sofa","bath","kitchen","stairs","car","leaf","chair"];
 
+const FURNITURE_TYPE_KEYWORDS = {
+  "Asiento": ["sofa","sofá","silla","sillon","sillón","taburete","banqueta","puf","chaise","butaca","mecedora"],
+  "Mesa": ["mesa","escritorio","mesita","consola","secreter"],
+  "Almacenaje": ["armario","estanteria","estantería","comoda","cómoda","cajonera","vitrina","libreria","librería","ropero","alacena","zapatero","balda"],
+  "Cama": ["cama","litera","canape","canapé","cuna","somier"],
+  "Electrodoméstico": ["nevera","frigorifico","frigorífico","lavadora","secadora","horno","microondas","televisor","tv ","lavavajillas","vitroceramica","vitrocerámica","congelador","tostadora","cafetera"],
+  "Decoración": ["espejo","cuadro","lampara","lámpara","alfombra","cortina","jarron","jarrón","reloj de pared","planta decorativa"]
+};
+function detectFurnitureType(name){
+  const n = normalizePlantName(name);
+  for(const type in FURNITURE_TYPE_KEYWORDS){
+    if(FURNITURE_TYPE_KEYWORDS[type].some(k=>n.includes(k))) return type;
+  }
+  return "General";
+}
+
 const DEFAULT_HOUSE = [
   { id:"pb", name:"Planta baja", rooms:[
     "Rellano","Pasillo","Escaleras","Salón","Cuarto de baño","Habitación","Cocina","Porche"
@@ -1191,6 +1207,14 @@ function flatten(type){
 function dayIndexFor(dateStr){ return daysBetween(strToDate(STATE.epoch), strToDate(dateStr)); }
 function weekIndexFor(dateStr){ return Math.floor(dayIndexFor(dateStr)/7); }
 
+// Reparto por turnos que cambia de patrón cada vez que se completa una vuelta entera a la lista,
+// para que un ciclo nuevo no reparta exactamente lo mismo que el anterior.
+function rotIndex(di, memberIdx, nMembers, length){
+  if(!length) return 0;
+  const slot = di*nMembers + memberIdx;
+  const cycleNum = Math.floor(di / length);
+  return (((slot + cycleNum) % length) + length) % length;
+}
 function dailyTasksForMember(dateStr, memberIdx){
   const di = dayIndexFor(dateStr);
   const cristales = flatten('cristales');
@@ -1200,13 +1224,13 @@ function dailyTasksForMember(dateStr, memberIdx){
   const nMembers = Math.max(STATE.members.length,1);
   const slot = di*nMembers + memberIdx;
   const tasks = [];
-  if(cristales.length){ const it=cristales[slot % cristales.length]; tasks.push({icon:"window", tipo:"Cristal", title: it.label, min: it.min, key:"cristal"}); }
-  if(puertas.length){ const it=puertas[slot % puertas.length]; tasks.push({icon:"door", tipo:"Puerta", title: it.label, min: it.min, key:"puerta"}); }
-  if(muebles.length){ const it=muebles[slot % muebles.length]; tasks.push({icon:"chair", tipo:"Mueble", title: it.label, min: it.min, key:"mueble"}); }
+  if(cristales.length){ const it=cristales[rotIndex(di,memberIdx,nMembers,cristales.length)]; tasks.push({icon:"window", tipo:"Cristal", title: it.label, min: it.min, key:"cristal"}); }
+  if(puertas.length){ const it=puertas[rotIndex(di,memberIdx,nMembers,puertas.length)]; tasks.push({icon:"door", tipo:"Puerta", title: it.label, min: it.min, key:"puerta"}); }
+  if(muebles.length){ const it=muebles[rotIndex(di,memberIdx,nMembers,muebles.length)]; tasks.push({icon:"chair", tipo:"Mueble", title: it.label, min: it.min, key:"mueble"}); }
   if(rooms.length && STATE.roomTasks.length){
     STATE.roomTasks.forEach((rt, idx)=>{
       const offset = Math.ceil(rooms.length*idx/STATE.roomTasks.length);
-      const r = rooms[(slot+offset) % rooms.length];
+      const r = rooms[(rotIndex(di,memberIdx,nMembers,rooms.length)+offset) % rooms.length];
       tasks.push({icon: rt.icon||"sparkle", tipo: rt.name, title: r.label, min: rt.min, key: "roomtask-"+rt.id});
     });
   }
@@ -1395,7 +1419,7 @@ function dailyMicrotareas(dateStr, memberIdx){
 function todaysMicrotareas(dateStr, memberIdx){
   const n = STATE.microtareas.length;
   if(!n) return [];
-  const take = Math.min(3, n);
+  const take = Math.min(1, n);
   const di = dayIndexFor(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const offset = ((di*nMembers + memberIdx) % n + n) % n;
@@ -2325,8 +2349,7 @@ function itemSectionHTML(floorId, roomId, type, iconKey, title, defMin){
   return `<div class="section-title" style="margin-top:14px;display:flex;align-items:center;gap:5px;">${pixelIcon(iconKey,12)} ${title}${items.length?' ('+items.length+')':''}</div>
     ${items.map(it=>itemRowHTML(floorId,roomId,type,it)).join("")}
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
-      <input type="text" id="newItem_${type}_name" placeholder="Nombre" style="flex:1;min-width:100px;padding:8px;border-radius:5px;border:1px solid var(--line);">
-      ${type==='muebles' ? `<input type="text" id="newItem_${type}_tipo" placeholder="Tipo" style="width:90px;padding:8px;border-radius:5px;border:1px solid var(--line);">` : ""}
+      <input type="text" id="newItem_${type}_name" placeholder="${type==='muebles'?'Nombre (el tipo se detecta solo)':'Nombre'}" style="flex:1;min-width:100px;padding:8px;border-radius:5px;border:1px solid var(--line);">
       <input type="number" min="1" id="newItem_${type}_min" placeholder="${defMin}" style="width:56px;padding:8px;border-radius:5px;border:1px solid var(--line);text-align:center;">
       <button class="btn small" onclick="addRoomItem('${floorId}','${roomId}','${type}')">+ Añadir</button>
     </div>`;
@@ -2382,11 +2405,11 @@ function addRoomItem(floorId, roomId, type){
   const defMin = type==='cristales'?STATE.settings.cristal:type==='puertas'?STATE.settings.puerta:STATE.settings.mueble;
   const item = { id: type+"-"+Date.now(), name, min: parseInt(minInput.value)||defMin };
   if(type==='muebles'){
-    const tipoInput = document.getElementById(`newItem_${type}_tipo`);
-    item.tipo = tipoInput ? tipoInput.value.trim() : "";
+    item.tipo = detectFurnitureType(name);
   }
   room[type].push(item);
   save(); renderRoomEditorModal(floorId, roomId); renderCasa();
+  if(type==='muebles') toast("Añadido como: "+item.tipo);
 }
 function updateRoomItem(floorId, roomId, type, itemId, field, value){
   const room = STATE.house.find(f=>f.id===floorId).rooms.find(r=>r.id===roomId);
