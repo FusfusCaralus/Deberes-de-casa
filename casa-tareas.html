@@ -461,6 +461,25 @@ input,select{font-family:inherit;font-size:15px;}
       <p class="muted">Quien más mérito acumule este mes se lleva el marco. Sin sueldo, pero con orgullo.</p>
       <div id="wallOfFame"></div>
     </div>
+    <div class="card">
+      <h2>Tienda de familia</h2>
+      <p class="muted">Para cuando entre todos juntáis suficiente. Se paga con la suma de los puntos de toda la casa.</p>
+      <div id="familyShopContent"></div>
+    </div>
+    <div class="card">
+      <h2>Gestionar la tienda</h2>
+      <p class="muted">Añade tus propias recompensas, con el coste en puntos que le pongas según lo difícil o especial que sea.</p>
+      <div id="rewardCatalogAdmin"></div>
+      <div class="row" style="margin-top:8px;">
+        <input type="text" id="newRewardName" placeholder="Ej: Fin de semana sin tareas" style="flex:1;">
+        <input type="number" min="1" id="newRewardCost" placeholder="Puntos" style="width:80px;">
+      </div>
+      <select id="newRewardScope" style="margin-top:6px;width:100%;">
+        <option value="individual">Para quien la compre</option>
+        <option value="family">Para toda la familia</option>
+      </select>
+      <button class="btn block" style="margin-top:6px;" onclick="addRewardCatalogItem()">+ Añadir a la tienda</button>
+    </div>
   </div>
 
   <!-- COLADA -->
@@ -1011,6 +1030,20 @@ const DEFAULT_LAVADOS_PROGRAMADOS = [
   {id:"lv2", name:"Lavar las toallas", everyWeeks:2},
   {id:"lv3", name:"Lavar los trapos de limpieza", everyWeeks:2}
 ];
+const DEFAULT_REWARD_CATALOG = [
+  {id:"r1", name:"Elegir el menú de un día", cost:80, scope:"individual"},
+  {id:"r2", name:"Saltarte una microtarea hoy", cost:60, scope:"individual"},
+  {id:"r3", name:"Elegir la peli del finde", cost:100, scope:"individual"},
+  {id:"r4", name:"Un capricho dulce", cost:120, scope:"individual"},
+  {id:"r5", name:"Media hora extra de pantalla", cost:150, scope:"individual"},
+  {id:"r6", name:"Dormir 20 minutos más un día", cost:130, scope:"individual"},
+  {id:"r7", name:"Cena a domicilio a tu elección", cost:400, scope:"individual"},
+  {id:"r8", name:"Una tarde libre, cero tareas", cost:450, scope:"individual"},
+  {id:"r9", name:"Un día entero sin tareas", cost:800, scope:"individual"},
+  {id:"r10", name:"Noche de cine en casa con palomitas", cost:500, scope:"family"},
+  {id:"r11", name:"Cena fuera en pareja o en familia", cost:1200, scope:"family"},
+  {id:"r12", name:"Excursión o plan especial de un día", cost:1800, scope:"family"}
+];
 
 /* ======================= ALMACENAMIENTO SEGURO ======================= */
 // Si localStorage está bloqueado (vistas de archivos aisladas por seguridad),
@@ -1033,7 +1066,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})) };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0 };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1052,6 +1085,9 @@ if(!STATE.epoch) STATE.epoch = dateToStr(new Date());
 if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
+if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
+if(!STATE.familyPrizes) STATE.familyPrizes = [];
+if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -1676,6 +1712,48 @@ function weeklyMicroPoints(memberIdx, wi){
   }
   return points;
 }
+function spendablePoints(memberIdx){
+  const st = getStats(memberIdx);
+  return Math.max(0, memberTotalScore(memberIdx) - (st.pointsSpent||0));
+}
+function familySpendablePoints(){
+  const total = STATE.members.reduce((s,m,i)=>s+memberTotalScore(i),0);
+  return Math.max(0, total - (STATE.familyPointsSpent||0));
+}
+function redeemReward(memberIdx, rewardId){
+  const reward = STATE.rewardCatalog.find(r=>r.id===rewardId);
+  if(!reward) return;
+  if(reward.scope==='family'){
+    if(familySpendablePoints() < reward.cost){ toast("Todavía no tenéis puntos suficientes entre todos."); return; }
+    STATE.familyPointsSpent = (STATE.familyPointsSpent||0) + reward.cost;
+    STATE.familyPrizes.push({ id:"fp"+Date.now(), rewardId, label:reward.name, used:false, earnedAt:new Date().toISOString() });
+    save(); renderLogros();
+    toast("¡Canjeado para toda la familia! A disfrutarlo juntos.");
+  } else {
+    const st = getStats(memberIdx);
+    if(spendablePoints(memberIdx) < reward.cost){ toast("Todavía no tienes puntos suficientes para esto."); return; }
+    st.pointsSpent = (st.pointsSpent||0) + reward.cost;
+    grantPrize(memberIdx, 'shop_reward', reward.name);
+    save(); renderLogros();
+    toast("¡Canjeado! Ya te toca disfrutarlo cuando quieras.");
+  }
+}
+function addRewardCatalogItem(){
+  const nameInput = document.getElementById("newRewardName");
+  const costInput = document.getElementById("newRewardCost");
+  const scopeInput = document.getElementById("newRewardScope");
+  const name = nameInput.value.trim();
+  const cost = parseInt(costInput.value);
+  if(!name){ toast("Ponle un nombre"); return; }
+  if(!cost || cost<1){ toast("Ponle un coste en puntos"); return; }
+  STATE.rewardCatalog.push({ id:"r"+Date.now(), name, cost, scope: scopeInput.value });
+  nameInput.value=""; costInput.value="";
+  save(); renderLogros(); toast("Recompensa añadida a la tienda");
+}
+function removeRewardCatalogItem(id){
+  STATE.rewardCatalog = STATE.rewardCatalog.filter(r=>r.id!==id);
+  save(); renderLogros();
+}
 function grantPrize(memberIdx, type, label){
   const mid = memberId(memberIdx);
   if(!STATE.prizes[mid]) STATE.prizes[mid] = [];
@@ -1724,9 +1802,10 @@ function badgeCountFor(memberIdx){
 /* ======================= ESTADÍSTICAS ACUMULADAS ======================= */
 function getStats(memberIdx){
   const mid = memberId(memberIdx);
-  if(!STATE.stats[mid]) STATE.stats[mid] = {totalMinutes:0,totalTasks:0,cristal:0,puerta:0,mueble:0,colada:0,planta:0,mascota:0,microPoints:0,bonusPoints:0};
+  if(!STATE.stats[mid]) STATE.stats[mid] = {totalMinutes:0,totalTasks:0,cristal:0,puerta:0,mueble:0,colada:0,planta:0,mascota:0,microPoints:0,bonusPoints:0,pointsSpent:0};
   if(STATE.stats[mid].microPoints===undefined) STATE.stats[mid].microPoints = 0;
   if(STATE.stats[mid].bonusPoints===undefined) STATE.stats[mid].bonusPoints = 0;
+  if(STATE.stats[mid].pointsSpent===undefined) STATE.stats[mid].pointsSpent = 0;
   return STATE.stats[mid];
 }
 function updateStats(memberIdx, task, sign){
@@ -3454,6 +3533,9 @@ if(!STATE.microtareasDiarias) STATE.microtareasDiarias = DEFAULT_MICROTAREAS_DIA
       if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
+if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
+if(!STATE.familyPrizes) STATE.familyPrizes = [];
+if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
@@ -3815,6 +3897,15 @@ function evolutionChartHTML(memberIdx){
 function openUsePrize(ownerMemberId, prizeId){
   const ownerIdx = STATE.members.findIndex(m=>m.id===ownerMemberId);
   if(ownerIdx<0) return;
+  const prize = (STATE.prizes[ownerMemberId]||[]).find(p=>p.id===prizeId);
+  if(prize && prize.type==='shop_reward'){
+    customConfirm("¿Marcar \""+prize.label+"\" como disfrutada? Se da por usada y no se puede deshacer.", ()=>{
+      prize.used = true;
+      save(); closeModal(); renderLogros();
+      toast("Disfrutada. Toca ganar puntos otra vez para repetir.");
+    });
+    return;
+  }
   const today = dateToStr(new Date());
   const tasks = tasksForMemberOnDate(today, ownerIdx).filter(t=>!isDone(today, ownerIdx, t.key));
   const body = document.getElementById("modalBody");
@@ -3835,6 +3926,15 @@ function openUsePrize(ownerMemberId, prizeId){
     <button class="btn block" onclick="confirmUsePrize('${ownerMemberId}','${prizeId}')">Ceder tarea</button>
   `;
   openModal();
+}
+function useFamilyPrize(prizeId){
+  const prize = STATE.familyPrizes.find(p=>p.id===prizeId);
+  if(!prize) return;
+  customConfirm("¿Marcar \""+prize.label+"\" como disfrutada por toda la familia? No se puede deshacer.", ()=>{
+    prize.used = true;
+    save(); closeModal(); renderLogros();
+    toast("Disfrutada en familia. A juntar puntos otra vez para repetir.");
+  });
 }
 function confirmUsePrize(ownerMemberId, prizeId){
   const ownerIdx = STATE.members.findIndex(m=>m.id===ownerMemberId);
@@ -3941,7 +4041,17 @@ function renderLogros(){
           <div class="bdesc">${p.used?'Ya usado':'Sin usar'}</div>
         </div>
         ${!p.used ? `<button class="btn small" onclick="openUsePrize('${m.id}','${p.id}')">Usar</button>` : ``}
-      </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Sin premios todavía. Gana la semana en minipuntos para conseguir uno.</p>`;
+      </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Sin premios todavía. Gana la semana en minipuntos, o cómprate uno en la tienda de ahí abajo.</p>`;
+    const balance = spendablePoints(mi);
+    const indivCatalog = STATE.rewardCatalog.filter(r=>r.scope==='individual');
+    const shopHTML = indivCatalog.length ? indivCatalog.map(r=>{
+      const canAfford = balance>=r.cost;
+      return `<div class="chore-row">
+        <div class="cname">${r.name}</div>
+        <span class="muted" style="font-size:10.5px;margin-right:6px;">${r.cost} pts</span>
+        <button class="btn small" ${canAfford?'':'disabled style="opacity:.4;"'} onclick="redeemReward(${mi},'${r.id}')">Canjear</button>
+      </div>`;
+    }).join("") : `<p class="muted" style="font-size:10.5px;">Sin recompensas individuales en la tienda todavía.</p>`;
     return `<div style="margin-bottom:16px;">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
         ${memberAvatarHTML(m)}
@@ -3956,10 +4066,54 @@ function renderLogros(){
       <div class="badge-grid">${comboBadges}</div>
       <div class="badge-group-title">Premios</div>
       <div style="display:flex;flex-direction:column;gap:6px;">${prizesHTML}</div>
+      <div class="badge-group-title">Tienda · ${balance} pts disponibles</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">${shopHTML}</div>
       <p class="muted" style="margin-top:4px;font-size:9.5px;">Toca una medalla conseguida para descargar el diploma.</p>
       ${next ? `<p class="muted" style="margin-top:6px;">Próxima racha: <strong>${next.name}</strong> (faltan ${Math.max(0,next.min-streak)} días)</p>` : ``}
     </div>`;
   }).join("");
+  renderFamilyShop();
+  renderRewardCatalogAdmin();
+}
+function renderFamilyShop(){
+  const el = document.getElementById("familyShopContent");
+  if(!el) return;
+  const balance = familySpendablePoints();
+  const familyCatalog = STATE.rewardCatalog.filter(r=>r.scope==='family');
+  const shopHTML = familyCatalog.length ? familyCatalog.map(r=>{
+    const canAfford = balance>=r.cost;
+    return `<div class="chore-row">
+      <div class="cname">${r.name}</div>
+      <span class="muted" style="font-size:10.5px;margin-right:6px;">${r.cost} pts</span>
+      <button class="btn small" ${canAfford?'':'disabled style="opacity:.4;"'} onclick="redeemReward(0,'${r.id}')">Canjear</button>
+    </div>`;
+  }).join("") : `<p class="muted" style="font-size:10.5px;">Sin recompensas familiares en la tienda todavía.</p>`;
+  const prizesHTML = STATE.familyPrizes.length ? STATE.familyPrizes.map(p=>`
+    <div class="badge ${p.used?'':'earned'}" style="width:auto;padding:8px 10px;text-align:left;display:flex;align-items:center;gap:8px;">
+      <div class="bicon" style="margin:0;">${pixelIcon('gem',18)}</div>
+      <div style="flex:1;">
+        <div class="bname" style="font-size:10.5px;">${p.label}</div>
+        <div class="bdesc">${p.used?'Ya disfrutada':'Sin usar'}</div>
+      </div>
+      ${!p.used ? `<button class="btn small" onclick="useFamilyPrize('${p.id}')">Usar</button>` : ``}
+    </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Sin premios de familia todavía.</p>`;
+  el.innerHTML = `
+    <p class="muted">Sumando los puntos de todos: <strong>${balance} pts disponibles</strong>.</p>
+    <div class="badge-group-title">Premios de familia conseguidos</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">${prizesHTML}</div>
+    <div class="badge-group-title">Tienda de familia</div>
+    <div style="display:flex;flex-direction:column;gap:4px;">${shopHTML}</div>
+  `;
+}
+function renderRewardCatalogAdmin(){
+  const el = document.getElementById("rewardCatalogAdmin");
+  if(!el) return;
+  el.innerHTML = STATE.rewardCatalog.map(r=>`
+    <div class="chore-row">
+      <div class="cname">${r.name} <span class="muted" style="font-size:9.5px;">(${r.scope==='family'?'familia':'individual'})</span></div>
+      <span class="muted" style="font-size:10.5px;margin-right:4px;">${r.cost} pts</span>
+      <button onclick="removeRewardCatalogItem('${r.id}')">✕</button>
+    </div>`).join("");
 }
 
 /* ======================= FIREBASE: CUENTA, CASA Y SINCRONIZACIÓN ======================= */
