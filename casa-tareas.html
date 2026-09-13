@@ -3926,8 +3926,20 @@ function backfillLifetimeCoverage(){
 }
 // Registra en la memoria permanente (que no se borra al "Reiniciar reparto") el elemento exacto
 // que se acaba de completar, calculado igual que se le asignó ese día a esa persona.
+// Firebase no guarda los objetos vacíos: si nunca se ha cubierto ningún mueble, por ejemplo,
+// esa parte puede faltar entera al leerla de vuelta. Nos aseguramos de que las cuatro
+// categorías existan siempre antes de tocarlas.
+function ensureLifetimeCoverageShape(){
+  if(!STATE.lifetimeCoverage) STATE.lifetimeCoverage = {};
+  const lc = STATE.lifetimeCoverage;
+  if(!lc.cristal) lc.cristal = {};
+  if(!lc.puerta) lc.puerta = {};
+  if(!lc.mueble) lc.mueble = {};
+  if(!lc.roomtask) lc.roomtask = {};
+  return lc;
+}
 function recordLifetimeCoverage(dateStr, memberIdx, key){
-  if(!STATE.lifetimeCoverage) STATE.lifetimeCoverage = {cristal:{},puerta:{},mueble:{},roomtask:{}};
+  const lc = ensureLifetimeCoverageShape();
   const di = dayIndexFor(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   if(key==='cristal'){
@@ -3953,7 +3965,7 @@ function recordLifetimeCoverage(dateStr, memberIdx, key){
 }
 function houseFullCoverage(){
   if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
-  const lc = STATE.lifetimeCoverage;
+  const lc = ensureLifetimeCoverageShape();
   const cristales = flatten('cristales');
   const puertas = flatten('puertas');
   const muebles = flatten('muebles');
