@@ -305,6 +305,11 @@ input,select{font-family:inherit;font-size:15px;}
   <!-- MES -->
   <div class="view" id="view-mes">
     <div class="card">
+      <h2>Tareas de este mes</h2>
+      <p class="muted">Lo que toca mensual, trimestral, semestral o anualmente este mes en concreto (las semanales ya las ves en Semana). Márcalas aquí cuando se hagan.</p>
+      <div id="monthChoresList"></div>
+    </div>
+    <div class="card">
       <div class="week-nav">
         <button onclick="shiftMonth(-1)">‹</button>
         <div><strong id="monthLabel"></strong></div>
@@ -929,7 +934,7 @@ const MEMBER_COLORS = ["#33475B","#A6402C","#5C7350","#7A5C3E","#6B5478","#3E737
 const AVATAR_LIST = ["avatar1","avatar2","avatar3","avatar4","avatar5","avatar6","avatar7","avatar8"];
 function memberAvatarHTML(m, size){
   size = size || 22;
-  if(m.avatar) return `<div class="member-dot" style="background:${m.color};width:${size}px;height:${size}px;">${pixelIcon(m.avatar, Math.round(size*0.72))}</div>`;
+  if(m.avatar) return `<div class="member-dot" style="background:none;border:2px solid ${m.color};width:${size}px;height:${size}px;">${pixelIcon(m.avatar, Math.round(size*0.72))}</div>`;
   return `<div class="member-dot" style="background:${m.color};width:${size}px;height:${size}px;">${m.name[0].toUpperCase()}</div>`;
 }
 
@@ -998,7 +1003,8 @@ const DEFAULT_MICROTAREAS = [
 const DEFAULT_MICROTAREAS_DIARIAS = [
   {id:"d1", name:"Hacer la cama", min:0, rotateBathrooms:false},
   {id:"d2", name:"Sacar la basura", min:0, rotateBathrooms:false},
-  {id:"d3", name:"Lavar los sanitarios del baño", min:0, rotateBathrooms:true}
+  {id:"d3", name:"Lavar los sanitarios del baño", min:0, rotateBathrooms:true},
+  {id:"d4", name:"Ventilar tu habitación", min:0, rotateBathrooms:false}
 ];
 const DEFAULT_LAVADOS_PROGRAMADOS = [
   {id:"lv1", name:"Lavar las sábanas", everyWeeks:2},
@@ -1109,6 +1115,11 @@ STATE.house.forEach(f=>{
       r[key] = arr;
     }
     if(!Array.isArray(r[key])) r[key] = [];
+    if(key==="muebles"){
+      r[key].forEach(item=>{
+        if(!item.tipo || item.tipo==="General" || item.tipo==="") item.tipo = detectFurnitureType(item.name);
+      });
+    }
   });
   });
 });
@@ -1412,9 +1423,10 @@ function dailyMicrotareas(dateStr, memberIdx){
   const take = Math.min(2, n);
   const di = dayIndexFor(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
-  const offset = ((di*nMembers + memberIdx) % n + n) % n;
+  const dayStart = ((di % n) + n) % n;
+  const memberStart = (dayStart + memberIdx*take) % n;
   const featured = [];
-  for(let i=0;i<take;i++) featured.push(list[(offset+i)%n]);
+  for(let i=0;i<take;i++) featured.push(list[(memberStart+i)%n]);
   return featured.map(mt=>{
     if(mt.rotateBathrooms){
       const bathrooms = allBathrooms();
@@ -2160,7 +2172,44 @@ function renderSemana(){
 let monthCursor = new Date(); monthCursor.setDate(1);
 function shiftMonth(n){ monthCursor.setMonth(monthCursor.getMonth()+n); renderMes(); }
 let selectedMonthDay = null;
+function choresDueInMonth(monthDate){
+  const year = monthDate.getFullYear(), month = monthDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+  const weekIndices = new Set();
+  for(let d = new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)){
+    const ds = dateToStr(d);
+    if(dayIndexFor(ds)<0) continue;
+    weekIndices.add(weekIndexFor(ds));
+  }
+  const due = new Map();
+  weekIndices.forEach(wi=>{
+    activeDueChores(wi).forEach(ch=>{
+      if((ch.freq||'semanal')==='semanal') return; // esas ya se ven cada semana en Semana
+      if(!due.has(ch.id)) due.set(ch.id, {chore:ch, wi});
+    });
+  });
+  return Array.from(due.values());
+}
+function renderMonthChores(){
+  const el = document.getElementById("monthChoresList");
+  if(!el) return;
+  const list = choresDueInMonth(monthCursor);
+  if(!list.length){ el.innerHTML = emptyState("sparkle","Nada especial este mes","Este mes no toca ninguna tarea de las de cada mes, trimestre o año. Disfrútalo."); return; }
+  el.innerHTML = list.map(({chore,wi})=>{
+    const key = "household-chore-"+chore.id+"-w"+wi;
+    const done = isHouseholdDone(key);
+    const doneBy = done ? householdDoneByName(key) : null;
+    return `<div class="gb-box ${done?'done':''}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:6px;${done?'opacity:.6;':''}" onclick="toggleHouseholdDone('${key}', ${selMemberIdx}); renderMonthChores();">
+      <div class="check" style="${done?'background:var(--good);border-color:var(--line-solid);color:#fff;':''}">${done?'✓':''}</div>
+      ${pixelIcon(chore.icon||'sparkle',16)}
+      <div style="flex:1;${done?'text-decoration:line-through;':''}"><strong style="font-size:12px;">${chore.name}</strong><div class="muted" style="font-size:10.5px;">${done?'Hecho por '+doneBy:CHORE_FREQ_LABELS[chore.freq]+' · el primero que la haga se lleva los puntos'}</div></div>
+      <div class="ttime">+${HOUSEHOLD_POINTS_PER_TASK} pts</div>
+    </div>`;
+  }).join("");
+}
 function renderMes(){
+  renderMonthChores();
   document.getElementById("monthLabel").textContent = `${MONTHS[monthCursor.getMonth()]} ${monthCursor.getFullYear()}`;
   const hdr = document.getElementById("monthDowHdr");
   hdr.innerHTML = DOW.map(d=>`<div class="dow-hdr">${d}</div>`).join("");
@@ -3575,7 +3624,7 @@ function houseFullCoverage(){
   const rooms = flatten('rooms');
   const nMembers = Math.max(STATE.members.length,1);
   const todayDi = dayIndexFor(dateToStr(new Date()));
-  const maxLookback = 730; // no hace falta mirar más de 2 años atrás
+  const maxLookback = 730;
   const startDi = Math.max(0, todayDi - maxLookback);
 
   const coveredCristal = new Set(), coveredPuerta = new Set(), coveredMueble = new Set(), coveredRoomTask = new Set();
@@ -3584,18 +3633,9 @@ function houseFullCoverage(){
     const ds = dateFromDayIndex(di);
     for(let mi=0; mi<STATE.members.length; mi++){
       if(isExcused(ds, mi)) continue;
-      if(cristales.length){
-        const idx = rotIndex(di, mi, nMembers, cristales.length);
-        if(isDone(ds, mi, 'cristal')) coveredCristal.add(idx);
-      }
-      if(puertas.length){
-        const idx = rotIndex(di, mi, nMembers, puertas.length);
-        if(isDone(ds, mi, 'puerta')) coveredPuerta.add(idx);
-      }
-      if(muebles.length){
-        const idx = rotIndex(di, mi, nMembers, muebles.length);
-        if(isDone(ds, mi, 'mueble')) coveredMueble.add(idx);
-      }
+      if(cristales.length){ const idx = rotIndex(di, mi, nMembers, cristales.length); if(isDone(ds, mi, 'cristal')) coveredCristal.add(idx); }
+      if(puertas.length){ const idx = rotIndex(di, mi, nMembers, puertas.length); if(isDone(ds, mi, 'puerta')) coveredPuerta.add(idx); }
+      if(muebles.length){ const idx = rotIndex(di, mi, nMembers, muebles.length); if(isDone(ds, mi, 'mueble')) coveredMueble.add(idx); }
       if(rooms.length && STATE.roomTasks.length){
         STATE.roomTasks.forEach((rt,rtIdx)=>{
           const offset = Math.ceil(rooms.length*rtIdx/STATE.roomTasks.length);
@@ -3606,37 +3646,52 @@ function houseFullCoverage(){
     }
   }
 
-  let minutesRemaining = 0;
-  cristales.forEach((it,idx)=>{ if(!coveredCristal.has(idx)) minutesRemaining += it.min; });
-  puertas.forEach((it,idx)=>{ if(!coveredPuerta.has(idx)) minutesRemaining += it.min; });
-  muebles.forEach((it,idx)=>{ if(!coveredMueble.has(idx)) minutesRemaining += it.min; });
-  const roomTaskUnits = [];
-  rooms.forEach((r,roomIdx)=>{
-    STATE.roomTasks.forEach(rt=>{
-      const done = coveredRoomTask.has(rt.id+"|"+roomIdx);
-      if(!done) minutesRemaining += rt.min;
-      roomTaskUnits.push({label: rt.name+" — "+r.label, done});
+  const floors = STATE.house.map(floor=>{
+    const roomsOut = floor.rooms.map(room=>{
+      const units = [];
+      (room.cristales||[]).forEach(item=>{
+        const idx = cristales.findIndex(c=>c.itemId===item.id);
+        const done = idx>=0 && coveredCristal.has(idx);
+        units.push({label:item.name, done, min:item.min});
+      });
+      (room.puertas||[]).forEach(item=>{
+        const idx = puertas.findIndex(c=>c.itemId===item.id);
+        const done = idx>=0 && coveredPuerta.has(idx);
+        units.push({label:item.name, done, min:item.min});
+      });
+      (room.muebles||[]).forEach(item=>{
+        const idx = muebles.findIndex(c=>c.itemId===item.id);
+        const done = idx>=0 && coveredMueble.has(idx);
+        units.push({label:item.name, done, min:item.min});
+      });
+      const roomIdx = rooms.findIndex(r=>r.roomId===room.id);
+      STATE.roomTasks.forEach(rt=>{
+        const done = roomIdx>=0 && coveredRoomTask.has(rt.id+"|"+roomIdx);
+        units.push({label:rt.name, done, min:rt.min});
+      });
+      const doneCount = units.filter(u=>u.done).length;
+      const minutesRemaining = units.filter(u=>!u.done).reduce((s,u)=>s+u.min,0);
+      return { name:room.name, units, doneCount, total:units.length, minutesRemaining, complete: units.length>0 && doneCount===units.length };
     });
+    return { name:floor.name, rooms:roomsOut };
   });
 
-  const totalUnits = cristales.length + puertas.length + muebles.length + roomTaskUnits.length;
+  const totalUnits = cristales.length + puertas.length + muebles.length + (rooms.length*STATE.roomTasks.length);
   const doneUnits = coveredCristal.size + coveredPuerta.size + coveredMueble.size + coveredRoomTask.size;
+  const minutesRemaining = floors.reduce((s,f)=>s+f.rooms.reduce((s2,r)=>s2+r.minutesRemaining,0),0);
 
-  return {
-    totalUnits, doneUnits, minutesRemaining,
-    cristales: cristales.map((it,idx)=>({label:it.label, done:coveredCristal.has(idx)})),
-    puertas: puertas.map((it,idx)=>({label:it.label, done:coveredPuerta.has(idx)})),
-    muebles: muebles.map((it,idx)=>({label:it.label, done:coveredMueble.has(idx)})),
-    roomTaskUnits
-  };
+  return { totalUnits, doneUnits, minutesRemaining, floors };
 }
+let houseCoverageOpenFloor = {};
+let houseCoverageOpenRoom = {};
+function toggleFloorCoverage(fi){ houseCoverageOpenFloor[fi] = !houseCoverageOpenFloor[fi]; renderHouseFullCoverage(); }
+function toggleRoomCoverage(key){ houseCoverageOpenRoom[key] = !houseCoverageOpenRoom[key]; renderHouseFullCoverage(); }
 function renderHouseFullCoverage(){
   const el = document.getElementById("houseFullCoverage");
   if(!el) return;
   if(!STATE.members.length){ el.innerHTML = emptyState("home","Sin equipo, sin ciclo","Añade a la familia primero."); return; }
   const cov = houseFullCoverage();
   const pct = cov.totalUnits>0 ? Math.round(cov.doneUnits/cov.totalUnits*100) : 100;
-  const chip = (label, done) => `<span class="pill" style="margin:2px 3px 2px 0;display:inline-block;background:${done?'var(--line-solid)':'var(--pine)'};color:${done?'var(--muted)':'#fff'};${done?'text-decoration:line-through;opacity:.65;':''}font-size:9.5px;font-weight:500;">${label}</span>`;
   el.innerHTML = `
     <div class="streak-box">
       <div class="streak-num">${cov.minutesRemaining}</div>
@@ -3644,10 +3699,34 @@ function renderHouseFullCoverage(){
     </div>
     <div class="bar-outer"><div class="bar-inner ${hpBarClass(pct)}" style="width:${pct}%"></div></div>
     <div style="margin-top:10px;">
-      ${cov.cristales.length?`<div class="badge-group-title">Cristales</div><div>${cov.cristales.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
-      ${cov.puertas.length?`<div class="badge-group-title">Puertas</div><div>${cov.puertas.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
-      ${cov.muebles.length?`<div class="badge-group-title">Muebles</div><div>${cov.muebles.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
-      ${cov.roomTaskUnits.length?`<div class="badge-group-title">Tareas de estancia</div><div>${cov.roomTaskUnits.map(x=>chip(x.label,x.done)).join("")}</div>`:``}
+      ${cov.floors.map((floor,fi)=>{
+        const floorDone = floor.rooms.reduce((s,r)=>s+r.doneCount,0);
+        const floorTotal = floor.rooms.reduce((s,r)=>s+r.total,0);
+        const floorComplete = floorTotal>0 && floorDone===floorTotal;
+        const open = !!houseCoverageOpenFloor[fi];
+        return `<div style="border:1px solid var(--line-solid);border-radius:6px;margin-bottom:6px;overflow:hidden;">
+          <div onclick="toggleFloorCoverage(${fi})" style="display:flex;align-items:center;gap:6px;padding:9px 10px;cursor:pointer;">
+            <span class="muted" style="font-size:10px;">${open?'▾':'▸'}</span>
+            <strong style="flex:1;font-size:12px;">${floor.name}${floorComplete?' · ¡completa! 🎉':''}</strong>
+            <span class="muted" style="font-size:10.5px;">${floorDone}/${floorTotal}</span>
+          </div>
+          ${open ? `<div style="padding:0 10px 8px;">${floor.rooms.map((room,ri)=>{
+            const roomKey = fi+"-"+ri;
+            const roomOpen = !!houseCoverageOpenRoom[roomKey];
+            return `<div style="margin-bottom:2px;border-top:1px solid var(--line);">
+              <div onclick="event.stopPropagation(); toggleRoomCoverage('${roomKey}')" style="display:flex;align-items:center;gap:6px;padding:7px 0;cursor:pointer;">
+                <span class="muted" style="font-size:9.5px;">${roomOpen?'▾':'▸'}</span>
+                <span style="flex:1;font-size:11.5px;font-weight:600;">${room.name}${room.complete?' · completa 🎉':''}</span>
+                <span class="muted" style="font-size:10px;">${room.doneCount}/${room.total}</span>
+              </div>
+              ${roomOpen ? `<div style="padding-left:16px;padding-bottom:6px;">${room.units.length? room.units.map(u=>`
+                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:10.5px;${u.done?'opacity:.45;text-decoration:line-through;':''}">
+                  <span>${u.label}</span>
+                </div>`).join("") : '<p class="muted" style="font-size:10px;">Sin nada que limpiar aquí todavía.</p>'}</div>` : ``}
+            </div>`;
+          }).join("")}</div>` : ``}
+        </div>`;
+      }).join("")}
     </div>
   `;
 }
