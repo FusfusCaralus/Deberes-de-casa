@@ -1244,7 +1244,12 @@ function resetProgressAndBadges(){
 }
 
 /* ======================= HELPERS FECHA ======================= */
-function dateToStr(d){ return d.toISOString().slice(0,10); }
+function dateToStr(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y+"-"+m+"-"+day;
+}
 function strToDate(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
 function daysBetween(a,b){ return Math.round((b-a)/86400000); }
 function startOfWeek(d){ const day=(d.getDay()+6)%7; const r=new Date(d); r.setDate(d.getDate()-day); r.setHours(0,0,0,0); return r; }
@@ -2051,14 +2056,11 @@ const MENU = [
   { id:"calendario", icon:"calendar", label:"Calendario", subs:[
     {view:"hoy", icon:"sun", label:"Hoy"}, {view:"semana", icon:"list", label:"Semana"}, {view:"mes", icon:"calendar", label:"Mes"}, {view:"progreso", icon:"chart", label:"Progreso"}, {view:"logros", icon:"trophy", label:"Logros"}
   ]},
-  { id:"casa", icon:"home", label:"Casa", subs:[
-    {view:"casa", icon:"home", label:"Estancias"}, {view:"otras", icon:"box", label:"Otras tareas"}, {view:"microtareas", icon:"sparkle", label:"Microtareas"}
-  ]},
-  { id:"colada", icon:"basket", label:"Colada", subs:[
-    {view:"colada", icon:"basket", label:"Colada"}
-  ]},
   { id:"compra", icon:"cart", label:"Compra", subs:[
     {view:"compra", icon:"cart", label:"Compra"}
+  ]},
+  { id:"casa", icon:"home", label:"Casa", subs:[
+    {view:"casa", icon:"home", label:"Estancias"}, {view:"otras", icon:"box", label:"Otras tareas"}, {view:"microtareas", icon:"sparkle", label:"Microtareas"}, {view:"colada", icon:"basket", label:"Colada"}
   ]},
   { id:"plantasanimales", icon:"leaf", label:"Plantas y Animales", subs:[
     {view:"plantas", icon:"leaf", label:"Plantas"}, {view:"animales", icon:"paw", label:"Animales"}
@@ -4348,7 +4350,7 @@ function renderLogros(){
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
       ${memberAvatarHTML(m)}
       <strong>${m.name}</strong>
-      <span class="muted">· racha ${streak}d · ${st.totalMinutes} min totales</span>
+      <span class="muted">· racha ${streak}d · ${st.totalMinutes} min totales · <strong style="color:var(--ink);">${memberTotalScore(mi)} pts</strong></span>
     </div>
     <div class="badge-group-title">Rachas</div>
     <div class="badge-grid">${rachaBadges}</div>
