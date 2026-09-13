@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADfUlEQVR4nO3dwXETQRCGUZsiG66cODsFEiAwIiEEguKwF5fx75JW3t3u6fdOFFUgaedTa2ah5OdvP34+wXu+XP0EqEscROIgEgeROIjEQSQOInEQiYNIHETiIBIHkTiIxEEkDiJxEImDSBxE4iASB5E4iMRBJA4icRCJg0gcROIgEgeROIjEQfT16idQyN8/v7dffH/5de0zKeLZ93M8vcriNYn4WHm/jA9+f47pcXxcwPA+Rsdxy9pP7mNuHLev+tg+hsZx73rP7GPcaeXBZR51hJk1OR4fAKNGyKA4Pmtd5/QxJY7PXdEhfYyI44i1nNDH+nHctYp37TeX72Px08rt6/cmi91/cCUrT45HFvj2JV94fiwbx+NvfX2sGcdnfSgM72O1PccR28/jtrTFLTU5DlrFsUeYdeI49P09s49F4jhh8g/sY4U4TtsTTOujfRwn7xZH9dH7tHLhfcwJt1AbT45rl2fCLZCucVR44y7fR8s4KpRx79/fsY9me46aNytrPqvHdZocZddg1SNMmzjKlrHjEbv00SOO4mXseNwWfTSIo0UZOx69fh/V42hUxo7nULyP0qeVOkfWHVo/+U3dydH94i5wC6RoHN3L2HTvo2Ica5Sxad1HrT1Hu+3njZq+rkKTo+kVvEXTI0yVOBYuY9OxjxJxLF/Gpl0f18cxpIxNrz4ujmNUGZtGfVx5WlnpyLpD/Zd/2eSof2mOVv8WyDVxKGNTvI8L4lDGa5X7OHXPMXD7eaOaV+a8yVHz9RdR8whz0uS4/Mi+nhPeP2dMDmUc4YSrengcyjjO0df28Dim7R5WcsbHij6Oc+jwOOm0oo+Orv9XWcoSR2+HjmRxEPmJ1F2dsI2r9b/P3xhyj6Tsbt3HCpE4iMRBJA6ixqeVsvu4/zXdWZscROIgEgeROIjEQSQOInEQiYNIHETiIBIHkTiIxEEkDiJxEImDSBxE4iASB5E4iMRBJA4icRCJg0gcROIgEgeROIjEQSQOInEQiYNIHETiIBIHUePvBGv6RVuNmBxE4iASB5E4iMRBJA4icRCJg0gcRKV/jBfXMjmIxEEkDiJxEImDSBxE4iASB5E4iMRBJA4icRCJg0gcROIgEgeROIjEQSQOInEQiYNIHETiIBIHkTiIxEEkDiJxEImDSBxE4iASB5E4iMRBJA4icRCJg0gcRP8ATOcylvQu3doAAAAASUVORK5CYII=">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Deberes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2B3A55">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIkRlYmVyZXMgZGUgY2FzYSIsICJzaG9ydF9uYW1lIjogIkRlYmVyZXMiLCAic3RhcnRfdXJsIjogIi4iLCAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwgImJhY2tncm91bmRfY29sb3IiOiAiI0Y3RjZGMyIsICJ0aGVtZV9jb2xvciI6ICIjMkIzQTU1IiwgImljb25zIjogW3sic3JjIjogImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBTFFBQUFDMENBSUFBQUN5cjVGbEFBQURmVWxFUVZSNG5PM2R3WEVUUVJDR1Vac2lHNjZjT0RzRkVpQXdJaUVFZ3VLd0Y1Zng3NUpXM3QzdTZmZE9GRlVnYWVkVGEyYWg1T2R2UDM0K3dYdStYUDBFcUVzY1JPSWdFZ2VST0lqRVFTUU9JbkVRaVlOSUhFVGlJQklIa1RpSXhFRWtEaUp4RUltRFNCeEU0aUFTQjVFNGlNUkJKQTRpY1JDSmcwZ2NST0lnRWdlUk9JakVRZlQxNmlkUXlOOC92N2RmZkgvNWRlMHpLZUxaOTNNOHZjcmlOWW40V0htL2pBOStmNDdwY1h4Y3dQQStSc2R4eTlwUDdtTnVITGV2K3RnK2hzWng3M3JQN0dQY2FlWEJaUjUxaEprMU9SNGZBS05HeUtBNFBtdGQ1L1F4Slk3UFhkRWhmWXlJNDRpMW5OREgrbkhjdFlwMzdUZVg3MlB4MDhydDYvY21pOTEvY0NVclQ0NUhGdmoySlY5NGZpd2J4K052Zlgyc0djZG5mU2dNNzJPMVBjY1IyOC9qdHJURkxUVTVEbHJGc1VlWWRlSTQ5UDA5czQ5RjRqaGg4Zy9zWTRVNFR0c1RUT3VqZlJ3bjd4Wkg5ZEg3dEhMaGZjd0p0MUFiVDQ1cmwyZkNMWkN1Y1ZSNDR5N2ZSOHM0S3BSeDc5L2ZzWTltZTQ2YU55dHJQcXZIZFpvY1pkZGcxU05NbXpqS2xySGpFYnYwMFNPTzRtWHNlTndXZlRTSW8wVVpPeDY5ZmgvVjQyaFV4bzduVUx5UDBxZVZPa2ZXSFZvLytVM2R5ZEg5NGk1d0M2Um9ITjNMMkhUdm8ySWNhNVN4YWQxSHJUMUh1KzNualpxK3JrS1RvK2tWdkVYVEkweVZPQll1WTlPeGp4SnhMRi9HcGwwZjE4Y3hwSXhOcno0dWptTlVHWnRHZlZ4NVdsbnB5THBEL1pkLzJlU29mMm1PVnY4V3lEVnhLR05Udkk4TDRsREdhNVg3T0hYUE1YRDdlYU9hVithOHlWSHo5UmRSOHdoejB1UzQvTWkrbmhQZVAyZE1EbVVjNFlTcmVuZ2N5ampPMGRmMjhEaW03UjVXY3NiSGlqNk9jK2p3T09tMG9vK09ydjlYV2NvU1IyK0hqbVJ4RVBtSjFGMmRzSTJyOWIvUDN4aHlqNlRzYnQzSENwRTRpTVJCSkE2aXhxZVZzdnU0L3pYZFdac2NST0lnRWdlUk9JakVRU1FPSW5FUWlZTklIRVRpSUJJSGtUaUl4RUVrRGlKeEVJbURTQnhFNGlBU0I1RTRpTVJCSkE0aWNSQ0pnMGdjUk9JZ0VnZVJPSWpFUVNRT0luRVFpWU5JSEVUaUlCSUhVZVB2Qkd2NlJWdU5tQnhFNGlBU0I1RTRpTVJCSkE0aWNSQ0pnMGdjUktWL2pCZlhNam1JeEVFa0RpSnhFSW1EU0J4RTRpQVNCNUU0aU1SQkpBNGljUkNKZzBnY1JPSWdFZ2VST0lqRVFTUU9JbkVRaVlOSUhFVGlJQklIa1RpSXhFRWtEaUp4RUltRFNCeEU0aUFTQjVFNGlNUkJKQTRpY1JDSmcwZ2NSUDhBVE9jeWx2UXUzZG9BQUFBQVNVVk9SSzVDWUlJPSIsICJzaXplcyI6ICIxODB4MTgwIiwgInR5cGUiOiAiaW1hZ2UvcG5nIn1dfQ==">
 <title>Deberes de casa</title>
 <script>
 // Red de seguridad: si algo falla, mostramos el error en pantalla en vez de dejar la app cargando para siempre en silencio.
@@ -220,6 +227,12 @@ input,select{font-family:inherit;font-size:15px;}
 .modal{background:var(--paper);border-radius:10px 10px 0 0;padding:16px;width:100%;max-height:85vh;overflow-y:auto;border-top:1px solid var(--line-solid);}
 .modal h3{margin-top:0;font-size:16px;font-weight:600;}
 .close-x{float:right;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);}
+#printCuadrante{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #printCuadrante, #printCuadrante *{visibility:visible;}
+  #printCuadrante{display:block !important;position:absolute;top:0;left:0;width:100%;padding:20px;}
+}
 </style>
 </head>
 <body>
@@ -303,8 +316,10 @@ input,select{font-family:inherit;font-size:15px;}
         <button onclick="shiftWeek(1)">›</button>
       </div>
       <div id="weekList"></div>
+      <button class="btn secondary block" style="margin-top:10px;" onclick="printCuadrante()">🖨️ Imprimir el cuadrante de esta semana</button>
     </div>
   </div>
+  <div id="printCuadrante"></div>
 
   <!-- MES -->
   <div class="view" id="view-mes">
@@ -330,6 +345,11 @@ input,select{font-family:inherit;font-size:15px;}
     <div class="card">
       <h2><span id="icoRanking"></span> Ranking</h2>
       <div id="rankingList"></div>
+    </div>
+    <div class="card">
+      <h2>Resumen de la semana</h2>
+      <p class="muted">Cómo va la semana en curso, para toda la familia.</p>
+      <div id="weeklySummary"></div>
     </div>
     <div class="card">
       <h2>Progreso de hoy</h2>
@@ -639,6 +659,13 @@ input,select{font-family:inherit;font-size:15px;}
       <h2>Tono de fondo</h2>
       <p class="muted">La combinación de blancos y grises de fondo, con acabado fino y elegante.</p>
       <div class="palette-grid" id="bgPaletteGrid"></div>
+    </div>
+    <div class="card">
+      <h2>Modo oscuro</h2>
+      <p class="muted">Para usarla de noche sin que deslumbre. Con su propio color de acento, pensado para verse bien sobre fondo oscuro.</p>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
+        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"> Activar modo oscuro
+      </label>
     </div>
   </div>
 
@@ -1000,6 +1027,31 @@ function applyBgTheme(themeId){
   r.setProperty('--line', t.line);
   r.setProperty('--line-solid', t.lineSolid);
 }
+function applyDarkMode(on){
+  const r = document.documentElement.style;
+  if(on){
+    r.setProperty('--bg', '#1E1D1B');
+    r.setProperty('--card', '#292825');
+    r.setProperty('--paper', '#292825');
+    r.setProperty('--ink', '#EDEAE2');
+    r.setProperty('--muted', '#9B968A');
+    r.setProperty('--line', '#38362F');
+    r.setProperty('--line-solid', '#4A473F');
+    r.setProperty('--pine', '#D4A857');
+    r.setProperty('--pine-dark', '#B8903E');
+    r.setProperty('--ochre', '#D4A857');
+    r.setProperty('--good', '#6FBF8B');
+    r.setProperty('--danger', '#E08478');
+  } else {
+    r.setProperty('--ink', '#25241F');
+    r.setProperty('--muted', '#8A867C');
+    r.setProperty('--good', '#4C8F6B');
+    r.setProperty('--danger', '#B5524A');
+    applyBgTheme(STATE.bgTheme);
+  if(STATE.darkMode) applyDarkMode(true);
+    applyTheme(STATE.theme);
+  }
+}
 
 /* ======================= ESTADO ======================= */
 const DEFAULT_ROOM_TASKS = [
@@ -1078,7 +1130,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}} };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1101,6 +1153,7 @@ if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({.
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
+if(STATE.darkMode===undefined) STATE.darkMode = false;
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -2369,6 +2422,35 @@ function emptyState(icon,title,sub){
 /* ======================= SEMANA ======================= */
 let weekOffset = 0;
 function shiftWeek(n){ weekOffset+=n; renderSemana(); }
+function printCuadrante(){
+  if(!STATE.members.length){ toast("Añade a la familia primero"); return; }
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate()+weekOffset*7);
+  const days = [...Array(7)].map((_,i)=>{ const d=new Date(base); d.setDate(base.getDate()+i); return d; });
+  const label = `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} – ${days[6].getDate()} ${MONTHS[days[6].getMonth()]} ${days[6].getFullYear()}`;
+
+  let html = `<h1 style="font-family:-apple-system,sans-serif;margin-bottom:2px;">Deberes de casa</h1>
+    <p style="font-family:-apple-system,sans-serif;color:#555;margin-top:0;margin-bottom:16px;">Semana del ${label}</p>
+    <table style="width:100%;border-collapse:collapse;font-family:-apple-system,sans-serif;font-size:12px;">
+      <thead><tr>
+        <th style="border:1px solid #999;padding:6px;text-align:left;background:#eee;">Día</th>
+        ${STATE.members.map(m=>`<th style="border:1px solid #999;padding:6px;text-align:left;background:#eee;">${m.name}</th>`).join("")}
+      </tr></thead><tbody>`;
+  days.forEach(d=>{
+    const ds = dateToStr(d);
+    html += `<tr><td style="border:1px solid #999;padding:6px;font-weight:bold;vertical-align:top;">${DOW[(d.getDay()+6)%7]} ${d.getDate()}</td>`;
+    STATE.members.forEach((m,mi)=>{
+      const excused = isExcused(ds, mi);
+      const tasks = excused ? [] : tasksForMemberOnDate(ds, mi);
+      html += `<td style="border:1px solid #999;padding:6px;vertical-align:top;">${excused ? 'Ausente' : (tasks.length ? tasks.map(t=>`• ${t.tipo}: ${t.title}`).join('<br>') : 'Sin tareas')}</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table>
+    <div style="margin-top:16px;font-family:-apple-system,sans-serif;font-size:11px;color:#777;">Además esta semana, para toda la casa: ${householdWeeklyTasks(dateToStr(days[0])).map(t=>t.title).join(', ')||'nada especial'}.</div>`;
+  document.getElementById("printCuadrante").innerHTML = html;
+  window.print();
+}
 let showPastDays = false;
 function togglePastDays(){ showPastDays = !showPastDays; renderSemana(); }
 function weekDayBlockHTML(d){
@@ -3573,6 +3655,13 @@ function renderApariencia(){
       <div class="palette-name">${t.name}</div>
     </div>`;
   }).join("");
+  const darkToggle = document.getElementById("darkModeToggle");
+  if(darkToggle) darkToggle.checked = !!STATE.darkMode;
+}
+function toggleDarkMode(){
+  STATE.darkMode = document.getElementById("darkModeToggle").checked;
+  applyDarkMode(STATE.darkMode);
+  save();
 }
 function chooseTheme(id){
   STATE.theme = id;
@@ -3767,6 +3856,7 @@ if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({.
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
+if(STATE.darkMode===undefined) STATE.darkMode = false;
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
@@ -3776,6 +3866,7 @@ if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
       save();
       applyTheme(STATE.theme);
       applyBgTheme(STATE.bgTheme);
+  if(STATE.darkMode) applyDarkMode(true);
       toast("Configuración importada");
       setView(currentView);
     }catch(err){
@@ -4111,9 +4202,49 @@ function renderHouseCountdown(dateStr){
     <div class="bar-outer"><div class="bar-inner ${hpBarClass(pct)}" style="width:${pct}%"></div></div>
   `;
 }
+function renderWeeklySummary(){
+  const el = document.getElementById("weeklySummary");
+  if(!el) return;
+  if(!STATE.members.length){ el.innerHTML = emptyState("family","Sin equipo todavía","Añade a la familia en Ajustes."); return; }
+  const today = dateToStr(new Date());
+  const wi = weekIndexFor(today);
+  const base = startOfWeek(new Date());
+  const daysDone = [...Array(7)].map((_,i)=>{ const d=new Date(base); d.setDate(base.getDate()+i); return d; }).filter(d=>dateToStr(d)<=today);
+
+  let totalFamilyMinutes = 0;
+  const perMember = STATE.members.map((m,mi)=>{
+    let minutes = 0, tasksDone = 0;
+    daysDone.forEach(d=>{
+      const ds = dateToStr(d);
+      const s = dayStatsForMember(ds, mi);
+      s.tasks.forEach(t=>{ if(isDone(ds,mi,t.key)){ minutes += t.min; tasksDone++; } });
+    });
+    totalFamilyMinutes += minutes;
+    return { name:m.name, avatar:memberAvatarHTML(m), minutes, tasksDone };
+  });
+  perMember.sort((a,b)=>b.minutes-a.minutes);
+  const leader = perMember[0];
+
+  const householdTasks = householdWeeklyTasks(today);
+  const doneCount = householdTasks.filter(t=>isHouseholdDone(t.key)).length;
+  const pending = householdTasks.filter(t=>!isHouseholdDone(t.key));
+
+  el.innerHTML = `
+    <p class="muted" style="margin-bottom:8px;">Entre todos lleváis <strong style="color:var(--ink);">${totalFamilyMinutes} min</strong> esta semana.${leader && leader.minutes>0 ? ' Va en cabeza <strong style="color:var(--ink);">'+leader.name+'</strong>.' : ''}</p>
+    ${perMember.map(p=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        ${p.avatar}
+        <span style="flex:1;font-size:12px;">${p.name}</span>
+        <span class="muted" style="font-size:11px;">${p.tasksDone} tareas · ${p.minutes} min</span>
+      </div>`).join("")}
+    <div class="badge-group-title">Tareas de la casa</div>
+    <p class="muted" style="font-size:11px;">${doneCount}/${householdTasks.length} hechas esta semana${pending.length?': falta '+pending.map(t=>t.title.toLowerCase()).join(', '):''}.</p>
+  `;
+}
 function renderProgreso(){
   const today = dateToStr(new Date());
   renderRankingList();
+  renderWeeklySummary();
   renderHouseCountdown(today);
   renderHouseFullCoverage();
   if(!STATE.members.length){
@@ -4271,6 +4402,22 @@ function renderWallOfFame(){
   `;
 }
 let selLogrosMemberIdx = 0;
+function streakHeatmapHTML(memberIdx){
+  const today = new Date();
+  const days = 35;
+  const cells = [];
+  for(let i=days-1; i>=0; i--){
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const ds = dateToStr(d);
+    const past = dayIndexFor(ds) >= 0;
+    const done = past && isDayComplete(ds, memberIdx);
+    const isToday = ds === dateToStr(today);
+    const color = !past ? 'transparent' : (done ? 'var(--pine)' : 'var(--line-solid)');
+    cells.push(`<div title="${ds}" style="width:11px;height:11px;border-radius:2px;background:${color};${isToday?'box-shadow:0 0 0 1.5px var(--ink) inset;':''}"></div>`);
+  }
+  return `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;max-width:180px;margin-top:2px;">${cells.join("")}</div>
+    <p class="muted" style="font-size:9px;margin-top:4px;">Últimos 35 días · cada cuadro es un día cumplido</p>`;
+}
 function renderLogros(){
   renderWallOfFame();
   const el = document.getElementById("logrosContent");
@@ -4352,6 +4499,7 @@ function renderLogros(){
       <strong>${m.name}</strong>
       <span class="muted">· racha ${streak}d · ${st.totalMinutes} min totales · <strong style="color:var(--ink);">${memberTotalScore(mi)} pts</strong></span>
     </div>
+    ${streakHeatmapHTML(mi)}
     <div class="badge-group-title">Rachas</div>
     <div class="badge-grid">${rachaBadges}</div>
     <div class="badge-group-title">Constancia</div>
@@ -4610,6 +4758,7 @@ function bootApp(){
   ["icoBackup"].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML = pixelIcon("save",16); });
   applyTheme(STATE.theme);
   applyBgTheme(STATE.bgTheme);
+  if(STATE.darkMode) applyDarkMode(true);
   setView("hoy");
 }
 initFirebase();
