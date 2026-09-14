@@ -877,59 +877,59 @@ function normalizePlantName(s){
   return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
 }
 const PLANT_CARE_DB = {
-  "ficus":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 4-6 semanas en primavera/verano", poda:"Poda de forma en primavera", extra:"No le gustan las corrientes de aire ni los cambios bruscos de sitio."},
-  "potos":       {agua:7,  ubicacion:"Interior", luz:"Poca luz o luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta los tallos largos para que ramifique", extra:"Muy resistente, ideal para empezar."},
-  "sansevieria": {agua:14, ubicacion:"Interior", luz:"Cualquier luz, tolera poca", abono:"Cada 2 meses en verano", poda:"Quita hojas dañadas desde la base", extra:"Aguanta muy bien el olvido de riego."},
-  "cactus":      {agua:14, ubicacion:"Interior o exterior", luz:"Sol directo", abono:"Cada 1-2 meses en primavera/verano, nada en invierno", poda:"No suele necesitar", extra:"Mejor pecar de poco riego que de mucho."},
-  "aloe vera":   {agua:12, ubicacion:"Interior o exterior", luz:"Sol o luz muy brillante", abono:"Cada 2 meses en temporada de crecimiento", poda:"Retira hojas secas de la base", extra:"Deja secar la tierra del todo entre riegos."},
-  "orquidea":    {agua:7,  ubicacion:"Interior", luz:"Luz indirecta, nunca sol directo", abono:"Abono especial orquídeas cada 15 días en floración", poda:"Corta la vara floral cuando se seque", extra:"Mejor regar sumergiendo la maceta unos minutos."},
-  "monstera":    {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en primavera/verano", poda:"Poda para controlar el tamaño", extra:"Limpia las hojas para que respiren mejor."},
-  "dracena":     {agua:9,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta las puntas secas", extra:"Sensible al exceso de riego."},
-  "helecho":     {agua:4,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en primavera/verano", poda:"Retira frondes secas", extra:"Le gusta la humedad ambiental alta."},
-  "hiedra":      {agua:6,  ubicacion:"Interior o exterior", luz:"Luz indirecta a semisombra", abono:"Cada 6 semanas en crecimiento", poda:"Poda para mantener forma y densidad", extra:"Crece rápido, ideal para colgar."},
-  "rosal":       {agua:3,  ubicacion:"Exterior", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda fuerte en invierno/final de invierno", extra:"Vigila el pulgón en brotes nuevos."},
-  "romero":      {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda ligera tras la floración", extra:"Mejor con poco riego que con exceso."},
-  "menta":       {agua:3,  ubicacion:"Exterior o interior con luz", luz:"Sol o semisombra", abono:"Cada mes en crecimiento", poda:"Corta puntas para que ramifique", extra:"Es invasiva, mejor en maceta aparte."},
-  "albahaca":    {agua:2,  ubicacion:"Exterior o interior soleado", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas", poda:"Despunta las flores para que dure más", extra:"No le gusta el frío ni las corrientes."},
-  "tomate":      {agua:2,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 semanas en floración/fruto", poda:"Quita brotes laterales (chupones)", extra:"Necesita tutor o soporte."},
-  "geranio":     {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2-3 semanas en floración", poda:"Despunta flores secas y poda en otoño", extra:"Deja secar un poco la tierra entre riegos."},
-  "lavanda":     {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda tras la floración", extra:"Prefiere tierra poco húmeda."},
-  "suculenta":   {agua:12, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 2 meses en crecimiento", poda:"No suele necesitar", extra:"Riega solo cuando la tierra esté seca del todo."},
-  "violeta africana": {agua:5, ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 2-4 semanas", poda:"Retira hojas y flores secas", extra:"Evita mojar las hojas al regar."},
-  "planta de jade":   {agua:14, ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma cuando quieras", extra:"Muy sensible al exceso de agua."},
-  "espatifilo":  {agua:5,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta flores y hojas secas", extra:"Las hojas caídas avisan de que necesita agua."},
-  "bambu":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes si está en agua o tierra", poda:"Corta cañas para controlar altura", extra:"Si está en agua, cámbiala cada 1-2 semanas."},
-  "palmera":     {agua:6,  ubicacion:"Interior o exterior", luz:"Luz brillante indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas amarillas o secas", extra:"Le sienta bien pulverizar agua en las hojas."},
-  "cinta":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta puntas secas", extra:"Muy fácil de reproducir por esquejes."},
-  "pilea":       {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en crecimiento", poda:"Retira hojas amarillas", extra:"Gira la maceta de vez en cuando para que crezca recta."},
-  "calathea":    {agua:4,  ubicacion:"Interior", luz:"Luz indirecta, nada de sol directo", abono:"Cada mes en primavera/verano", poda:"Retira hojas secas desde la base", extra:"Le gusta la humedad ambiental alta, evita el agua muy fría."},
-  "peperomia":   {agua:8,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Despunta para que ramifique", extra:"Deja secar la tierra entre riegos."},
-  "yuca":        {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta la caña si crece demasiado alta", extra:"Muy resistente a los olvidos de riego."},
-  "kentia":      {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas secas o amarillas", extra:"Evita corrientes de aire frío."},
-  "ave del paraiso": {agua:5, ubicacion:"Interior o exterior", luz:"Luz brillante, algo de sol", abono:"Cada mes en primavera/verano", poda:"Retira hojas rotas o secas", extra:"Necesita bastante espacio para crecer."},
-  "adelfa":      {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración", extra:"Toda la planta es tóxica si se ingiere, cuidado con niños y mascotas."},
-  "buganvilla":  {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 3-4 semanas en floración", poda:"Poda fuerte en invierno", extra:"Florece más si se le da poco riego."},
-  "hortensia":   {agua:3,  ubicacion:"Exterior o interior luminoso", luz:"Semisombra", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda a final de invierno", extra:"Necesita bastante agua en verano, no dejes que se marchite."},
-  "margarita":   {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en floración", poda:"Retira flores secas para que siga floreciendo", extra:"Muy agradecida y fácil de cuidar."},
-  "pensamiento": {agua:4,  ubicacion:"Exterior o interior luminoso", luz:"Sol suave o semisombra", abono:"Cada 3-4 semanas en floración", poda:"Retira flores marchitas", extra:"Prefiere el frío, decae con mucho calor."},
-  "tulipan":     {agua:5,  ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"No suele necesitar tras plantar el bulbo", poda:"Corta la flor cuando se seque", extra:"El bulbo se puede guardar para el año siguiente."},
-  "azalea":      {agua:4,  ubicacion:"Interior o exterior en sombra", luz:"Luz brillante sin sol directo", abono:"Cada 3-4 semanas en crecimiento", poda:"Poda ligera tras la floración", extra:"Prefiere agua sin cal, mejor de lluvia si es posible."},
-  "ciclamen":    {agua:5,  ubicacion:"Interior fresco", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas tirando desde la base", extra:"Prefiere ambientes frescos, no le gusta la calefacción cerca."},
-  "flor de pascua": {agua:6, ubicacion:"Interior", luz:"Luz brillante indirecta", abono:"Cada mes en crecimiento", poda:"No suele necesitar", extra:"Sensible al frío y a las corrientes de aire."},
-  "drago":       {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta las puntas secas", extra:"Muy resistente, tolera bien el olvido."},
-  "cala":        {agua:4,  ubicacion:"Interior o exterior en semisombra", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas", extra:"Le gusta la tierra siempre algo húmeda."},
-  "amarilis":    {agua:7,  ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 3-4 semanas en crecimiento", poda:"Corta la flor cuando se seque, deja las hojas", extra:"Tras la floración, deja descansar el bulbo unos meses."},
-  "begonia":     {agua:5,  ubicacion:"Interior o exterior en sombra", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Despunta para que ramifique", extra:"Evita mojar las hojas al regar."},
-  "gardenia":    {agua:4,  ubicacion:"Interior luminoso o exterior", luz:"Luz brillante, sol suave", abono:"Cada 3-4 semanas con abono para plantas ácidas", poda:"Poda ligera tras la floración", extra:"Necesita bastante humedad ambiental."},
-  "jazmin":      {agua:5,  ubicacion:"Exterior o interior luminoso", luz:"Sol o semisombra", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración para controlar forma", extra:"Muy aromático, ideal cerca de ventanas y terrazas."},
-  "boj":         {agua:9,  ubicacion:"Exterior", luz:"Sol o semisombra", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma 2-3 veces al año", extra:"Perfecto para setos y formas geométricas."},
-  "oregano":     {agua:5,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Apenas necesita", poda:"Corta antes de que florezca para más aroma", extra:"Muy resistente, aguanta bien la sequía."},
-  "cilantro":    {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las hojas exteriores primero", extra:"No le gusta el trasplante, mejor sembrar directo."},
-  "perejil":     {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las ramas exteriores primero", extra:"Tarda en germinar, ten paciencia."},
-  "limonero":    {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Sensible al frío intenso, protégelo en heladas."},
-  "naranjo":     {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Igual que el limonero, cuidado con las heladas."},
-  "olivo":       {agua:10, ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 meses en primavera/verano", poda:"Poda anual en primavera", extra:"Muy resistente a la sequía una vez asentado."},
-  "fresa":       {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Cada 2-3 semanas en floración/fruto", poda:"Retira hojas secas y estolones si no los quieres usar", extra:"Riego regular pero sin encharcar."}
+  "ficus":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 4-6 semanas en primavera/verano", poda:"Poda de forma en primavera", extra:"No le gustan las corrientes de aire ni los cambios bruscos de sitio.", riego:"Por arriba, dejando escurrir el exceso"},
+  "potos":       {agua:7,  ubicacion:"Interior", luz:"Poca luz o luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta los tallos largos para que ramifique", extra:"Muy resistente, ideal para empezar.", riego:"Por arriba, dejando escurrir el exceso"},
+  "sansevieria": {agua:14, ubicacion:"Interior", luz:"Cualquier luz, tolera poca", abono:"Cada 2 meses en verano", poda:"Quita hojas dañadas desde la base", extra:"Aguanta muy bien el olvido de riego.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "cactus":      {agua:14, ubicacion:"Interior o exterior", luz:"Sol directo", abono:"Cada 1-2 meses en primavera/verano, nada en invierno", poda:"No suele necesitar", extra:"Mejor pecar de poco riego que de mucho.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "aloe vera":   {agua:12, ubicacion:"Interior o exterior", luz:"Sol o luz muy brillante", abono:"Cada 2 meses en temporada de crecimiento", poda:"Retira hojas secas de la base", extra:"Deja secar la tierra del todo entre riegos.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "orquidea":    {agua:7,  ubicacion:"Interior", luz:"Luz indirecta, nunca sol directo", abono:"Abono especial orquídeas cada 15 días en floración", poda:"Corta la vara floral cuando se seque", extra:"Mejor regar sumergiendo la maceta unos minutos.", riego:"Por sumersión (unos minutos y escurrir bien)"},
+  "monstera":    {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en primavera/verano", poda:"Poda para controlar el tamaño", extra:"Limpia las hojas para que respiren mejor.", riego:"Por arriba, dejando escurrir el exceso"},
+  "dracena":     {agua:9,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta las puntas secas", extra:"Sensible al exceso de riego.", riego:"Por arriba, dejando secar un poco la superficie entre riegos"},
+  "helecho":     {agua:4,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en primavera/verano", poda:"Retira frondes secas", extra:"Le gusta la humedad ambiental alta.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "hiedra":      {agua:6,  ubicacion:"Interior o exterior", luz:"Luz indirecta a semisombra", abono:"Cada 6 semanas en crecimiento", poda:"Poda para mantener forma y densidad", extra:"Crece rápido, ideal para colgar.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "rosal":       {agua:3,  ubicacion:"Exterior", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda fuerte en invierno/final de invierno", extra:"Vigila el pulgón en brotes nuevos.", riego:"Por arriba, riego abundante"},
+  "romero":      {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda ligera tras la floración", extra:"Mejor con poco riego que con exceso.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "menta":       {agua:3,  ubicacion:"Exterior o interior con luz", luz:"Sol o semisombra", abono:"Cada mes en crecimiento", poda:"Corta puntas para que ramifique", extra:"Es invasiva, mejor en maceta aparte.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "albahaca":    {agua:2,  ubicacion:"Exterior o interior soleado", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas", poda:"Despunta las flores para que dure más", extra:"No le gusta el frío ni las corrientes.", riego:"Por arriba, tierra siempre algo húmeda"},
+  "tomate":      {agua:2,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 semanas en floración/fruto", poda:"Quita brotes laterales (chupones)", extra:"Necesita tutor o soporte.", riego:"Por arriba, riego abundante y regular"},
+  "geranio":     {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2-3 semanas en floración", poda:"Despunta flores secas y poda en otoño", extra:"Deja secar un poco la tierra entre riegos.", riego:"Dejar secar un poco la superficie entre riegos"},
+  "lavanda":     {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda tras la floración", extra:"Prefiere tierra poco húmeda.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "suculenta":   {agua:12, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 2 meses en crecimiento", poda:"No suele necesitar", extra:"Riega solo cuando la tierra esté seca del todo.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "violeta africana": {agua:5, ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 2-4 semanas", poda:"Retira hojas y flores secas", extra:"Evita mojar las hojas al regar.", riego:"Por sumersión, evitando mojar las hojas"},
+  "planta de jade":   {agua:14, ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma cuando quieras", extra:"Muy sensible al exceso de agua.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "espatifilo":  {agua:5,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta flores y hojas secas", extra:"Las hojas caídas avisan de que necesita agua.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "bambu":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes si está en agua o tierra", poda:"Corta cañas para controlar altura", extra:"Si está en agua, cámbiala cada 1-2 semanas.", riego:"Manteniendo la tierra siempre algo húmeda (o agua si está en agua)"},
+  "palmera":     {agua:6,  ubicacion:"Interior o exterior", luz:"Luz brillante indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas amarillas o secas", extra:"Le sienta bien pulverizar agua en las hojas.", riego:"Por arriba, dejando escurrir el exceso"},
+  "cinta":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta puntas secas", extra:"Muy fácil de reproducir por esquejes.", riego:"Por arriba, dejando secar un poco entre riegos"},
+  "pilea":       {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en crecimiento", poda:"Retira hojas amarillas", extra:"Gira la maceta de vez en cuando para que crezca recta.", riego:"Dejar secar un poco la superficie entre riegos"},
+  "calathea":    {agua:4,  ubicacion:"Interior", luz:"Luz indirecta, nada de sol directo", abono:"Cada mes en primavera/verano", poda:"Retira hojas secas desde la base", extra:"Le gusta la humedad ambiental alta, evita el agua muy fría.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "peperomia":   {agua:8,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Despunta para que ramifique", extra:"Deja secar la tierra entre riegos.", riego:"Dejar secar un poco la superficie entre riegos"},
+  "yuca":        {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta la caña si crece demasiado alta", extra:"Muy resistente a los olvidos de riego.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "kentia":      {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas secas o amarillas", extra:"Evita corrientes de aire frío.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "ave del paraiso": {agua:5, ubicacion:"Interior o exterior", luz:"Luz brillante, algo de sol", abono:"Cada mes en primavera/verano", poda:"Retira hojas rotas o secas", extra:"Necesita bastante espacio para crecer.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "adelfa":      {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración", extra:"Toda la planta es tóxica si se ingiere, cuidado con niños y mascotas.", riego:"Por arriba, riego abundante en verano"},
+  "buganvilla":  {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 3-4 semanas en floración", poda:"Poda fuerte en invierno", extra:"Florece más si se le da poco riego.", riego:"Dejar secar un poco entre riegos (florece más así)"},
+  "hortensia":   {agua:3,  ubicacion:"Exterior o interior luminoso", luz:"Semisombra", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda a final de invierno", extra:"Necesita bastante agua en verano, no dejes que se marchite.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "margarita":   {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en floración", poda:"Retira flores secas para que siga floreciendo", extra:"Muy agradecida y fácil de cuidar.", riego:"Por arriba, dejando escurrir el exceso"},
+  "pensamiento": {agua:4,  ubicacion:"Exterior o interior luminoso", luz:"Sol suave o semisombra", abono:"Cada 3-4 semanas en floración", poda:"Retira flores marchitas", extra:"Prefiere el frío, decae con mucho calor.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "tulipan":     {agua:5,  ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"No suele necesitar tras plantar el bulbo", poda:"Corta la flor cuando se seque", extra:"El bulbo se puede guardar para el año siguiente.", riego:"Por arriba, dejando escurrir el exceso"},
+  "azalea":      {agua:4,  ubicacion:"Interior o exterior en sombra", luz:"Luz brillante sin sol directo", abono:"Cada 3-4 semanas en crecimiento", poda:"Poda ligera tras la floración", extra:"Prefiere agua sin cal, mejor de lluvia si es posible.", riego:"Manteniendo la tierra siempre algo húmeda, con agua sin cal"},
+  "ciclamen":    {agua:5,  ubicacion:"Interior fresco", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas tirando desde la base", extra:"Prefiere ambientes frescos, no le gusta la calefacción cerca.", riego:"Por sumersión, evitando mojar el centro de la planta"},
+  "flor de pascua": {agua:6, ubicacion:"Interior", luz:"Luz brillante indirecta", abono:"Cada mes en crecimiento", poda:"No suele necesitar", extra:"Sensible al frío y a las corrientes de aire.", riego:"Por arriba, dejando escurrir el exceso"},
+  "drago":       {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta las puntas secas", extra:"Muy resistente, tolera bien el olvido.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "cala":        {agua:4,  ubicacion:"Interior o exterior en semisombra", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas", extra:"Le gusta la tierra siempre algo húmeda.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "amarilis":    {agua:7,  ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 3-4 semanas en crecimiento", poda:"Corta la flor cuando se seque, deja las hojas", extra:"Tras la floración, deja descansar el bulbo unos meses.", riego:"Por arriba, moderado"},
+  "begonia":     {agua:5,  ubicacion:"Interior o exterior en sombra", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Despunta para que ramifique", extra:"Evita mojar las hojas al regar.", riego:"Por arriba, evitando mojar las hojas"},
+  "gardenia":    {agua:4,  ubicacion:"Interior luminoso o exterior", luz:"Luz brillante, sol suave", abono:"Cada 3-4 semanas con abono para plantas ácidas", poda:"Poda ligera tras la floración", extra:"Necesita bastante humedad ambiental.", riego:"Manteniendo la tierra siempre algo húmeda, con agua sin cal"},
+  "jazmin":      {agua:5,  ubicacion:"Exterior o interior luminoso", luz:"Sol o semisombra", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración para controlar forma", extra:"Muy aromático, ideal cerca de ventanas y terrazas.", riego:"Por arriba, dejando escurrir el exceso"},
+  "boj":         {agua:9,  ubicacion:"Exterior", luz:"Sol o semisombra", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma 2-3 veces al año", extra:"Perfecto para setos y formas geométricas.", riego:"Por arriba, riego moderado"},
+  "oregano":     {agua:5,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Apenas necesita", poda:"Corta antes de que florezca para más aroma", extra:"Muy resistente, aguanta bien la sequía.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "cilantro":    {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las hojas exteriores primero", extra:"No le gusta el trasplante, mejor sembrar directo.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "perejil":     {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las ramas exteriores primero", extra:"Tarda en germinar, ten paciencia.", riego:"Manteniendo la tierra siempre algo húmeda"},
+  "limonero":    {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Sensible al frío intenso, protégelo en heladas.", riego:"Por arriba, riego regular sin encharcar"},
+  "naranjo":     {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Igual que el limonero, cuidado con las heladas.", riego:"Por arriba, riego regular sin encharcar"},
+  "olivo":       {agua:10, ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 meses en primavera/verano", poda:"Poda anual en primavera", extra:"Muy resistente a la sequía una vez asentado.", riego:"Dejar secar la tierra del todo entre riegos"},
+  "fresa":       {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Cada 2-3 semanas en floración/fruto", poda:"Retira hojas secas y estolones si no los quieres usar", extra:"Riego regular pero sin encharcar.", riego:"Manteniendo la tierra siempre algo húmeda, sin encharcar"}
 };
 function findPlantCare(name){
   const n = normalizePlantName(name);
@@ -1394,8 +1394,6 @@ function petDailyTasks(dateStr, memberIdx){
   STATE.pets.forEach((p,pi)=>{
     const assigned = (di+pi) % nMembers;
     if(assigned !== memberIdx) return;
-    tasks.push({icon:PET_TASK_ICONS.comida, tipo:"Mascota · comida y agua", title: p.name, min: p.comidaMin!=null?p.comidaMin:getOtherTime('petComida',5), key:"pet-"+p.id+"-comida"});
-    if(p.type==="perro") tasks.push({icon:PET_TASK_ICONS.paseo, tipo:"Mascota · paseo", title: p.name, min: p.paseoMin!=null?p.paseoMin:getOtherTime('petPaseo',15), key:"pet-"+p.id+"-paseo"});
     (p.medications||[]).forEach(med=>{
       let due = false;
       if(med.freqType==='diario' || med.freqType==='horas') due = true;
@@ -1410,16 +1408,7 @@ function petDailyTasks(dateStr, memberIdx){
   return tasks;
 }
 function petWeeklyTasks(dateStr, memberIdx){
-  const wi = weekIndexFor(dateStr);
-  const nMembers = Math.max(STATE.members.length,1);
-  const tasks = [];
-  STATE.pets.forEach((p,pi)=>{
-    const assigned = (wi+pi) % nMembers;
-    if(assigned !== memberIdx) return;
-    tasks.push({icon:PET_TASK_ICONS.arenero, tipo:"Mascota · limpiar arenero/jaula", title: p.name, min: p.areneroMin!=null?p.areneroMin:getOtherTime('petArenero',10), key:"pet-"+p.id+"-arenero", weekly:true});
-    tasks.push({icon:PET_TASK_ICONS.cepillar, tipo:"Mascota · cepillar", title: p.name, min: p.cepilloMin!=null?p.cepilloMin:getOtherTime('petCepillo',10), key:"pet-"+p.id+"-cepillo", weekly:true});
-  });
-  return tasks;
+  return [];
 }
 function plantDailyTasks(dateStr, memberIdx){
   const di = dayIndexFor(dateStr);
@@ -3167,7 +3156,7 @@ function addMember(){
   const newMember = { id:"m"+Date.now(), name, color: MEMBER_COLORS[STATE.members.length % MEMBER_COLORS.length], avatar: null, avatarFill: "transparent", mascotType };
   STATE.members.push(newMember);
   if(mascotType==='mascota'){
-    STATE.pets.push({ id:"pet"+Date.now(), name, type:"perro", linkedMemberId:newMember.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
+    STATE.pets.push({ id:"pet"+Date.now(), name, type:"perro", linkedMemberId:newMember.id, medications:[], vaccines:[] });
   }
   input.value="";
   document.getElementById("newMemberIsMascot").checked = false;
@@ -3251,7 +3240,7 @@ function ensureMascotHasPetEntry(memberIdx){
   if(m.mascotType!=='mascota') return;
   const already = STATE.pets.some(p=>p.linkedMemberId===m.id);
   if(already) return;
-  STATE.pets.push({ id:"pet"+Date.now(), name:m.name, type:"perro", linkedMemberId:m.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
+  STATE.pets.push({ id:"pet"+Date.now(), name:m.name, type:"perro", linkedMemberId:m.id, medications:[], vaccines:[] });
 }
 function selectMemberAvatar(a){
   STATE.members[editMemberIdx].avatar = a;
@@ -3278,6 +3267,7 @@ function renderPlantas(){
           <div class="muted" style="font-size:10px;margin-top:2px;line-height:1.5;">
             ${pixelIcon('droplet',10)} Riego cada ${p.freq} día${p.freq==1?'':'s'} · ${p.riegoMin!=null?p.riegoMin:getOtherTime('plantRiego',3)} min &nbsp;
             ${pixelIcon(p.ubicacion==='Exterior'?'sun':'home',10)} ${p.ubicacion||'Sin especificar'}<br>
+            ${p.metodoRiego?`${pixelIcon('droplet',10)} Cómo: ${p.metodoRiego}<br>`:``}
             ${p.lastWatered ? `${pixelIcon('droplet',10)} Regado por última vez: ${strToDate(p.lastWatered).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}<br>` : ``}
             ${pixelIcon('leaf',10)} Abono: ${p.abono||'Sin especificar'}<br>
             ${pixelIcon('scissors',10)} Poda: ${p.poda||'Sin especificar'}
@@ -3294,10 +3284,21 @@ function plantFormHTML(p){
     <button class="close-x" onclick="closeModal()">✕</button>
     <h3>${isEdit?'Editar planta':'Añadir planta'}</h3>
     <div class="field"><label>Nombre</label><input type="text" id="plantName" placeholder="Ej: Ficus, potos, cactus..." value="${p?p.name:''}" oninput="autofillPlantCare()"></div>
-    <p class="muted" id="plantCareHint">${isEdit?'Puedes editar cualquier campo a mano.':'Escribe el nombre y, si la reconocemos, rellenamos el resto por ti.'}</p>
+    <p class="muted" id="plantCareHint">${isEdit?'Puedes editar cualquier campo a mano.':'Escribe el nombre y, si la reconocemos, rellenamos el resto por ti (incluido cómo regarla).'}</p>
     <div class="field"><label>Ubicación en casa</label><input type="text" id="plantLoc" placeholder="Ej: Salón, planta baja" value="${p?p.location||'':''}"></div>
     <div class="field"><label>Regar cada cuántos días</label><input type="number" min="1" id="plantFreq" value="${p?p.freq:3}"></div>
     <div class="field"><label>Minutos que lleva regarla</label><input type="number" min="1" id="plantRiegoMin" value="${p&&p.riegoMin!=null?p.riegoMin:getOtherTime('plantRiego',3)}"></div>
+    <div class="field"><label>Cómo se riega</label>
+      <select id="plantMetodoRiego" onchange="document.getElementById('plantMetodoRiegoCustom').style.display = this.value==='__custom__'?'block':'none';">
+        <option value="" ${p&&!p.metodoRiego?'selected':''}>Sin especificar</option>
+        <option value="Por arriba, dejando escurrir el exceso" ${p&&p.metodoRiego==='Por arriba, dejando escurrir el exceso'?'selected':''}>Por arriba, dejando escurrir el exceso</option>
+        <option value="Por sumersión (unos minutos y escurrir bien)" ${p&&p.metodoRiego==='Por sumersión (unos minutos y escurrir bien)'?'selected':''}>Por sumersión</option>
+        <option value="Manteniendo la tierra siempre algo húmeda" ${p&&p.metodoRiego==='Manteniendo la tierra siempre algo húmeda'?'selected':''}>Manteniendo la tierra siempre húmeda</option>
+        <option value="Dejar secar la tierra del todo entre riegos" ${p&&p.metodoRiego==='Dejar secar la tierra del todo entre riegos'?'selected':''}>Dejar secar del todo entre riegos</option>
+        <option value="__custom__" ${p&&p.metodoRiego&&!['','Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'].includes(p.metodoRiego)?'selected':''}>Otro (lo escribo yo)</option>
+      </select>
+      <input type="text" id="plantMetodoRiegoCustom" placeholder="Describe cómo se riega" style="margin-top:6px;display:${p&&p.metodoRiego&&!['','Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'].includes(p.metodoRiego)?'block':'none'};" value="${p&&p.metodoRiego&&!['','Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'].includes(p.metodoRiego)?p.metodoRiego:''}">
+    </div>
     <div class="field"><label>Interior o exterior</label>
       <select id="plantUbicacion">
         <option value="" ${p&&!p.ubicacion?'selected':''}>Sin especificar</option>
@@ -3310,9 +3311,9 @@ function plantFormHTML(p){
     <div class="field"><label>Poda</label><input type="text" id="plantPoda" placeholder="Ej: Poda de forma en primavera" value="${p?p.poda||'':''}"></div>
     <div class="field"><label>Otros cuidados</label><input type="text" id="plantExtra" placeholder="Ej: No le gustan las corrientes de aire" value="${p?p.extra||'':''}"></div>
     <div class="field">
-      <label>Foto de referencia (opcional, solo para reconocerla tú)</label>
-      <input type="file" accept="image/*" id="plantPhoto" onchange="previewPlantPhoto(event)">
-      <p class="muted" style="margin-top:4px;">La app no identifica la especie desde la foto: eso necesitaría un servicio de reconocimiento por internet que este archivo, al ser un fichero local, no puede usar. La foto es solo para que la reconozcas tú de un vistazo.</p>
+      <label>Foto de referencia (hacerla ahora o elegir de tu galería)</label>
+      <input type="file" accept="image/*" capture="environment" id="plantPhoto" onchange="previewPlantPhoto(event)">
+      <p class="muted" style="margin-top:4px;">La app no identifica la especie a partir de la foto: eso necesitaría un servicio de reconocimiento por internet que este archivo, al ser un fichero local, no puede usar. Para que se rellenen los cuidados automáticamente, escribe el nombre arriba; la foto es solo para que la reconozcas tú de un vistazo.</p>
       <img id="plantPhotoPreview" style="${p&&p.photo?'display:inline-block;':'display:none;'}width:60px;height:60px;object-fit:cover;border:2px solid var(--line-solid);border-radius:2px;margin-top:6px;" src="${p&&p.photo?p.photo:''}">
     </div>
     ${isEdit
@@ -3333,11 +3334,14 @@ function openEditPlant(id){
   openModal();
 }
 function readPlantForm(){
+  const metodoSel = document.getElementById("plantMetodoRiego").value;
+  const metodoRiego = metodoSel==='__custom__' ? document.getElementById("plantMetodoRiegoCustom").value.trim() : metodoSel;
   return {
     name: document.getElementById("plantName").value.trim(),
     location: document.getElementById("plantLoc").value.trim(),
     freq: parseInt(document.getElementById("plantFreq").value)||3,
     riegoMin: parseInt(document.getElementById("plantRiegoMin").value)||getOtherTime('plantRiego',3),
+    metodoRiego: metodoRiego,
     ubicacion: document.getElementById("plantUbicacion").value,
     abono: document.getElementById("plantAbono").value.trim(),
     poda: document.getElementById("plantPoda").value.trim(),
@@ -3364,7 +3368,19 @@ function autofillPlantCare(){
     document.getElementById("plantAbono").value = care.abono;
     document.getElementById("plantPoda").value = care.poda;
     document.getElementById("plantExtra").value = care.extra;
-    hint.textContent = "✓ Ficha de cuidados reconocida y rellenada. Puedes editarla si quieres.";
+    const metodoSel = document.getElementById("plantMetodoRiego");
+    const knownOptions = ['Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'];
+    if(care.riego){
+      if(knownOptions.includes(care.riego)){
+        metodoSel.value = care.riego;
+        document.getElementById("plantMetodoRiegoCustom").style.display = "none";
+      } else {
+        metodoSel.value = "__custom__";
+        document.getElementById("plantMetodoRiegoCustom").value = care.riego;
+        document.getElementById("plantMetodoRiegoCustom").style.display = "block";
+      }
+    }
+    hint.textContent = "✓ Ficha de cuidados reconocida y rellenada, incluido cómo regarla. Puedes editarla si quieres.";
     hint.style.color = "var(--good)";
   } else {
     hint.textContent = "No está en nuestra lista de plantas conocidas: rellena tú los cuidados.";
@@ -3401,10 +3417,6 @@ function renderAnimales(){
   const el = document.getElementById("petList");
   if(!STATE.pets.length){ el.innerHTML = emptyState("paw","Casa sin pelo ni ladridos","Añade a tus mascotas. Ellas tampoco se cuidan solas, aunque lo parezca."); return; }
   el.innerHTML = STATE.pets.map(p=>{
-    const comida = p.comidaMin!=null?p.comidaMin:getOtherTime('petComida',5);
-    const paseo = p.paseoMin!=null?p.paseoMin:getOtherTime('petPaseo',15);
-    const arenero = p.areneroMin!=null?p.areneroMin:getOtherTime('petArenero',10);
-    const cepillo = p.cepilloMin!=null?p.cepilloMin:getOtherTime('petCepillo',10);
     const extras = [];
     if(p.weight!=null) extras.push(p.weight+' kg');
     if(p.vetNextDate) extras.push('Veterinario: '+p.vetNextDate);
@@ -3414,11 +3426,7 @@ function renderAnimales(){
         <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:2px solid var(--line-solid);border-radius:2px;flex:0 0 auto;">${pixelIcon('paw',16)}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:800;font-size:12.5px;">${p.name} <span class="muted" style="font-weight:600;">· ${p.type}</span></div>
-          <div class="muted" style="font-size:10px;margin-top:2px;line-height:1.5;">
-            Comida/agua: ${comida} min${p.type==='perro'?' · Paseo: '+paseo+' min':''}<br>
-            Arenero/jaula: ${arenero} min · Cepillar: ${cepillo} min
-            ${extras.length?`<br>${extras.join(' · ')}`:``}
-          </div>
+          ${extras.length?`<div class="muted" style="font-size:10px;margin-top:2px;line-height:1.5;">${extras.join(' · ')}</div>`:``}
         </div>
         <button onclick="event.stopPropagation(); removePet('${p.id}')">✕</button>
       </div>
@@ -3453,31 +3461,26 @@ function petFormHTML(p){
         <option value="otro" ${p&&p.type==='otro'?'selected':''}>Otro</option>
       </select>
     </div>
-    <div class="room-edit-row"><label>Comida/agua (min)</label><input type="number" min="1" id="petComidaMin" value="${p&&p.comidaMin!=null?p.comidaMin:getOtherTime('petComida',5)}"></div>
-    <div class="room-edit-row"><label>Paseo (min, solo perros)</label><input type="number" min="1" id="petPaseoMin" value="${p&&p.paseoMin!=null?p.paseoMin:getOtherTime('petPaseo',15)}"></div>
-    <div class="room-edit-row"><label>Arenero/jaula (min, semanal)</label><input type="number" min="1" id="petAreneroMin" value="${p&&p.areneroMin!=null?p.areneroMin:getOtherTime('petArenero',10)}"></div>
-    <div class="room-edit-row"><label>Cepillar (min, semanal)</label><input type="number" min="1" id="petCepilloMin" value="${p&&p.cepilloMin!=null?p.cepilloMin:getOtherTime('petCepillo',10)}"></div>
-
     <div class="badge-group-title">Datos del animal</div>
     <div class="field"><label>Fecha de nacimiento</label><input type="date" id="petBirthDate" value="${p&&p.birthDate?p.birthDate:''}"></div>
     <div class="field"><label>Peso (kg)</label><input type="number" step="0.1" min="0" id="petWeight" value="${p&&p.weight!=null?p.weight:''}"></div>
     <div class="field"><label>Marca de pienso</label><input type="text" id="petFoodBrand" placeholder="Ej: Royal Canin" value="${p&&p.foodBrand?p.foodBrand:''}"></div>
     <div class="field"><label>Cantidad de pienso (g)</label><input type="number" min="0" id="petFoodAmount" value="${p&&p.foodAmount!=null?p.foodAmount:''}"></div>
     <div class="field"><label>Próxima cita al veterinario</label><input type="date" id="petVetDate" value="${p&&p.vetNextDate?p.vetNextDate:''}"></div>
-    <div class="field"><label>Enlace al documento de identificación</label><input type="url" id="petIdDocLink" placeholder="https://..." value="${p&&p.idDocLink?p.idDocLink:''}"></div>
-    <div class="field"><label>O adjuntar documento (imagen o PDF, hasta 1,5 MB)</label><input type="file" id="petIdDocFile" accept="image/*,application/pdf"></div>
+    <div class="field"><label>Documento de identificación (imagen o PDF, hasta 1,5 MB)</label><input type="file" id="petIdDocFile" accept="image/*,application/pdf"></div>
     ${p&&p.idDocFile ? `<p class="muted" style="font-size:10.5px;">Ya tienes un documento adjunto. <a href="${p.idDocFile}" target="_blank" style="color:var(--pine);">Verlo</a> · <button onclick="event.preventDefault(); removePetIdDoc('${p.id}')" style="font-size:10px;">Quitar</button></p>` : ``}
 
     ${isEdit ? `
     <div class="badge-group-title">Medicación</div>
     <div>${medsHTML || '<p class="muted" style="font-size:10.5px;">Sin recordatorios de medicación.</p>'}</div>
     <div class="field" style="margin-top:6px;"><input type="text" id="newMedName" placeholder="Nombre del medicamento"></div>
-    <select id="newMedFreqType" style="margin-bottom:6px;width:100%;">
+    <select id="newMedFreqType" style="margin-bottom:6px;width:100%;" onchange="document.getElementById('newMedFreqValueRow').style.display=this.value==='dias'?'block':(this.value==='horas'?'block':'none');">
       <option value="horas">Cada X horas</option>
       <option value="diario">Todos los días</option>
       <option value="dias">Cada X días</option>
     </select>
-    <div class="field"><input type="number" min="1" id="newMedFreqValue" placeholder="Número (X), si aplica"></div>
+    <div class="field" id="newMedFreqValueRow"><input type="number" min="1" id="newMedFreqValue" placeholder="Número (X)"></div>
+    <div class="field"><label style="font-size:11px;">Fecha de inicio (elígela en el calendario)</label><input type="date" id="newMedStartDate" value="${dateToStr(new Date())}"></div>
     <button class="btn secondary block" style="margin-bottom:10px;" onclick="addPetMedication('${p.id}')">+ Añadir medicación</button>
 
     <div class="badge-group-title">Vacunas</div>
@@ -3508,16 +3511,11 @@ function readPetFormBasics(){
   return {
     name: document.getElementById("petName").value.trim(),
     type: document.getElementById("petType").value,
-    comidaMin: parseInt(document.getElementById("petComidaMin").value)||getOtherTime('petComida',5),
-    paseoMin: parseInt(document.getElementById("petPaseoMin").value)||getOtherTime('petPaseo',15),
-    areneroMin: parseInt(document.getElementById("petAreneroMin").value)||getOtherTime('petArenero',10),
-    cepilloMin: parseInt(document.getElementById("petCepilloMin").value)||getOtherTime('petCepillo',10),
     birthDate: document.getElementById("petBirthDate").value || null,
     weight: document.getElementById("petWeight").value ? parseFloat(document.getElementById("petWeight").value) : null,
     foodBrand: document.getElementById("petFoodBrand").value.trim(),
     foodAmount: document.getElementById("petFoodAmount").value ? parseInt(document.getElementById("petFoodAmount").value) : null,
-    vetNextDate: document.getElementById("petVetDate").value || null,
-    idDocLink: document.getElementById("petIdDocLink").value.trim()
+    vetNextDate: document.getElementById("petVetDate").value || null
   };
 }
 function readPetIdDocFile(){
@@ -3571,9 +3569,10 @@ function addPetMedication(petId){
   const name = document.getElementById("newMedName").value.trim();
   const freqType = document.getElementById("newMedFreqType").value;
   const freqValue = parseInt(document.getElementById("newMedFreqValue").value) || 1;
+  const startDate = document.getElementById("newMedStartDate").value || dateToStr(new Date());
   if(!name){ toast("Ponle un nombre al medicamento"); return; }
   if(!p.medications) p.medications = [];
-  p.medications.push({ id:"med"+Date.now(), name, freqType, freqValue, startDate: dateToStr(new Date()) });
+  p.medications.push({ id:"med"+Date.now(), name, freqType, freqValue, startDate });
   save();
   openEditPet(petId);
   toast("Medicación añadida");
