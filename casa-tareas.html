@@ -877,59 +877,59 @@ function normalizePlantName(s){
   return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
 }
 const PLANT_CARE_DB = {
-  "ficus":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 4-6 semanas en primavera/verano", poda:"Poda de forma en primavera", extra:"No le gustan las corrientes de aire ni los cambios bruscos de sitio.", riego:"Por arriba, dejando escurrir el exceso"},
-  "potos":       {agua:7,  ubicacion:"Interior", luz:"Poca luz o luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta los tallos largos para que ramifique", extra:"Muy resistente, ideal para empezar.", riego:"Por arriba, dejando escurrir el exceso"},
-  "sansevieria": {agua:14, ubicacion:"Interior", luz:"Cualquier luz, tolera poca", abono:"Cada 2 meses en verano", poda:"Quita hojas dañadas desde la base", extra:"Aguanta muy bien el olvido de riego.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "cactus":      {agua:14, ubicacion:"Interior o exterior", luz:"Sol directo", abono:"Cada 1-2 meses en primavera/verano, nada en invierno", poda:"No suele necesitar", extra:"Mejor pecar de poco riego que de mucho.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "aloe vera":   {agua:12, ubicacion:"Interior o exterior", luz:"Sol o luz muy brillante", abono:"Cada 2 meses en temporada de crecimiento", poda:"Retira hojas secas de la base", extra:"Deja secar la tierra del todo entre riegos.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "orquidea":    {agua:7,  ubicacion:"Interior", luz:"Luz indirecta, nunca sol directo", abono:"Abono especial orquídeas cada 15 días en floración", poda:"Corta la vara floral cuando se seque", extra:"Mejor regar sumergiendo la maceta unos minutos.", riego:"Por sumersión (unos minutos y escurrir bien)"},
-  "monstera":    {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en primavera/verano", poda:"Poda para controlar el tamaño", extra:"Limpia las hojas para que respiren mejor.", riego:"Por arriba, dejando escurrir el exceso"},
-  "dracena":     {agua:9,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta las puntas secas", extra:"Sensible al exceso de riego.", riego:"Por arriba, dejando secar un poco la superficie entre riegos"},
-  "helecho":     {agua:4,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en primavera/verano", poda:"Retira frondes secas", extra:"Le gusta la humedad ambiental alta.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "hiedra":      {agua:6,  ubicacion:"Interior o exterior", luz:"Luz indirecta a semisombra", abono:"Cada 6 semanas en crecimiento", poda:"Poda para mantener forma y densidad", extra:"Crece rápido, ideal para colgar.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "rosal":       {agua:3,  ubicacion:"Exterior", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda fuerte en invierno/final de invierno", extra:"Vigila el pulgón en brotes nuevos.", riego:"Por arriba, riego abundante"},
-  "romero":      {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda ligera tras la floración", extra:"Mejor con poco riego que con exceso.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "menta":       {agua:3,  ubicacion:"Exterior o interior con luz", luz:"Sol o semisombra", abono:"Cada mes en crecimiento", poda:"Corta puntas para que ramifique", extra:"Es invasiva, mejor en maceta aparte.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "albahaca":    {agua:2,  ubicacion:"Exterior o interior soleado", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas", poda:"Despunta las flores para que dure más", extra:"No le gusta el frío ni las corrientes.", riego:"Por arriba, tierra siempre algo húmeda"},
-  "tomate":      {agua:2,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 semanas en floración/fruto", poda:"Quita brotes laterales (chupones)", extra:"Necesita tutor o soporte.", riego:"Por arriba, riego abundante y regular"},
-  "geranio":     {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2-3 semanas en floración", poda:"Despunta flores secas y poda en otoño", extra:"Deja secar un poco la tierra entre riegos.", riego:"Dejar secar un poco la superficie entre riegos"},
-  "lavanda":     {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda tras la floración", extra:"Prefiere tierra poco húmeda.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "suculenta":   {agua:12, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 2 meses en crecimiento", poda:"No suele necesitar", extra:"Riega solo cuando la tierra esté seca del todo.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "violeta africana": {agua:5, ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 2-4 semanas", poda:"Retira hojas y flores secas", extra:"Evita mojar las hojas al regar.", riego:"Por sumersión, evitando mojar las hojas"},
-  "planta de jade":   {agua:14, ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma cuando quieras", extra:"Muy sensible al exceso de agua.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "espatifilo":  {agua:5,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta flores y hojas secas", extra:"Las hojas caídas avisan de que necesita agua.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "bambu":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes si está en agua o tierra", poda:"Corta cañas para controlar altura", extra:"Si está en agua, cámbiala cada 1-2 semanas.", riego:"Manteniendo la tierra siempre algo húmeda (o agua si está en agua)"},
-  "palmera":     {agua:6,  ubicacion:"Interior o exterior", luz:"Luz brillante indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas amarillas o secas", extra:"Le sienta bien pulverizar agua en las hojas.", riego:"Por arriba, dejando escurrir el exceso"},
-  "cinta":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta puntas secas", extra:"Muy fácil de reproducir por esquejes.", riego:"Por arriba, dejando secar un poco entre riegos"},
-  "pilea":       {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en crecimiento", poda:"Retira hojas amarillas", extra:"Gira la maceta de vez en cuando para que crezca recta.", riego:"Dejar secar un poco la superficie entre riegos"},
-  "calathea":    {agua:4,  ubicacion:"Interior", luz:"Luz indirecta, nada de sol directo", abono:"Cada mes en primavera/verano", poda:"Retira hojas secas desde la base", extra:"Le gusta la humedad ambiental alta, evita el agua muy fría.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "peperomia":   {agua:8,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Despunta para que ramifique", extra:"Deja secar la tierra entre riegos.", riego:"Dejar secar un poco la superficie entre riegos"},
-  "yuca":        {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta la caña si crece demasiado alta", extra:"Muy resistente a los olvidos de riego.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "kentia":      {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas secas o amarillas", extra:"Evita corrientes de aire frío.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "ave del paraiso": {agua:5, ubicacion:"Interior o exterior", luz:"Luz brillante, algo de sol", abono:"Cada mes en primavera/verano", poda:"Retira hojas rotas o secas", extra:"Necesita bastante espacio para crecer.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "adelfa":      {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración", extra:"Toda la planta es tóxica si se ingiere, cuidado con niños y mascotas.", riego:"Por arriba, riego abundante en verano"},
-  "buganvilla":  {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 3-4 semanas en floración", poda:"Poda fuerte en invierno", extra:"Florece más si se le da poco riego.", riego:"Dejar secar un poco entre riegos (florece más así)"},
-  "hortensia":   {agua:3,  ubicacion:"Exterior o interior luminoso", luz:"Semisombra", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda a final de invierno", extra:"Necesita bastante agua en verano, no dejes que se marchite.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "margarita":   {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en floración", poda:"Retira flores secas para que siga floreciendo", extra:"Muy agradecida y fácil de cuidar.", riego:"Por arriba, dejando escurrir el exceso"},
-  "pensamiento": {agua:4,  ubicacion:"Exterior o interior luminoso", luz:"Sol suave o semisombra", abono:"Cada 3-4 semanas en floración", poda:"Retira flores marchitas", extra:"Prefiere el frío, decae con mucho calor.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "tulipan":     {agua:5,  ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"No suele necesitar tras plantar el bulbo", poda:"Corta la flor cuando se seque", extra:"El bulbo se puede guardar para el año siguiente.", riego:"Por arriba, dejando escurrir el exceso"},
-  "azalea":      {agua:4,  ubicacion:"Interior o exterior en sombra", luz:"Luz brillante sin sol directo", abono:"Cada 3-4 semanas en crecimiento", poda:"Poda ligera tras la floración", extra:"Prefiere agua sin cal, mejor de lluvia si es posible.", riego:"Manteniendo la tierra siempre algo húmeda, con agua sin cal"},
-  "ciclamen":    {agua:5,  ubicacion:"Interior fresco", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas tirando desde la base", extra:"Prefiere ambientes frescos, no le gusta la calefacción cerca.", riego:"Por sumersión, evitando mojar el centro de la planta"},
-  "flor de pascua": {agua:6, ubicacion:"Interior", luz:"Luz brillante indirecta", abono:"Cada mes en crecimiento", poda:"No suele necesitar", extra:"Sensible al frío y a las corrientes de aire.", riego:"Por arriba, dejando escurrir el exceso"},
-  "drago":       {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta las puntas secas", extra:"Muy resistente, tolera bien el olvido.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "cala":        {agua:4,  ubicacion:"Interior o exterior en semisombra", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas", extra:"Le gusta la tierra siempre algo húmeda.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "amarilis":    {agua:7,  ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 3-4 semanas en crecimiento", poda:"Corta la flor cuando se seque, deja las hojas", extra:"Tras la floración, deja descansar el bulbo unos meses.", riego:"Por arriba, moderado"},
-  "begonia":     {agua:5,  ubicacion:"Interior o exterior en sombra", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Despunta para que ramifique", extra:"Evita mojar las hojas al regar.", riego:"Por arriba, evitando mojar las hojas"},
-  "gardenia":    {agua:4,  ubicacion:"Interior luminoso o exterior", luz:"Luz brillante, sol suave", abono:"Cada 3-4 semanas con abono para plantas ácidas", poda:"Poda ligera tras la floración", extra:"Necesita bastante humedad ambiental.", riego:"Manteniendo la tierra siempre algo húmeda, con agua sin cal"},
-  "jazmin":      {agua:5,  ubicacion:"Exterior o interior luminoso", luz:"Sol o semisombra", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración para controlar forma", extra:"Muy aromático, ideal cerca de ventanas y terrazas.", riego:"Por arriba, dejando escurrir el exceso"},
-  "boj":         {agua:9,  ubicacion:"Exterior", luz:"Sol o semisombra", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma 2-3 veces al año", extra:"Perfecto para setos y formas geométricas.", riego:"Por arriba, riego moderado"},
-  "oregano":     {agua:5,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Apenas necesita", poda:"Corta antes de que florezca para más aroma", extra:"Muy resistente, aguanta bien la sequía.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "cilantro":    {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las hojas exteriores primero", extra:"No le gusta el trasplante, mejor sembrar directo.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "perejil":     {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las ramas exteriores primero", extra:"Tarda en germinar, ten paciencia.", riego:"Manteniendo la tierra siempre algo húmeda"},
-  "limonero":    {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Sensible al frío intenso, protégelo en heladas.", riego:"Por arriba, riego regular sin encharcar"},
-  "naranjo":     {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Igual que el limonero, cuidado con las heladas.", riego:"Por arriba, riego regular sin encharcar"},
-  "olivo":       {agua:10, ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 meses en primavera/verano", poda:"Poda anual en primavera", extra:"Muy resistente a la sequía una vez asentado.", riego:"Dejar secar la tierra del todo entre riegos"},
-  "fresa":       {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Cada 2-3 semanas en floración/fruto", poda:"Retira hojas secas y estolones si no los quieres usar", extra:"Riego regular pero sin encharcar.", riego:"Manteniendo la tierra siempre algo húmeda, sin encharcar"}
+  "ficus":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 4-6 semanas en primavera/verano", poda:"Poda de forma en primavera", extra:"No le gustan las corrientes de aire ni los cambios bruscos de sitio.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "potos":       {agua:7,  ubicacion:"Interior", luz:"Poca luz o luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta los tallos largos para que ramifique", extra:"Muy resistente, ideal para empezar.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "sansevieria": {agua:14, ubicacion:"Interior", luz:"Cualquier luz, tolera poca", abono:"Cada 2 meses en verano", poda:"Quita hojas dañadas desde la base", extra:"Aguanta muy bien el olvido de riego.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "cactus":      {agua:14, ubicacion:"Interior o exterior", luz:"Sol directo", abono:"Cada 1-2 meses en primavera/verano, nada en invierno", poda:"No suele necesitar", extra:"Mejor pecar de poco riego que de mucho.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "aloe vera":   {agua:12, ubicacion:"Interior o exterior", luz:"Sol o luz muy brillante", abono:"Cada 2 meses en temporada de crecimiento", poda:"Retira hojas secas de la base", extra:"Deja secar la tierra del todo entre riegos.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "orquidea":    {agua:7,  ubicacion:"Interior", luz:"Luz indirecta, nunca sol directo", abono:"Abono especial orquídeas cada 15 días en floración", poda:"Corta la vara floral cuando se seque", extra:"Mejor regar sumergiendo la maceta unos minutos.", riego:"Sumerge la maceta en agua unos 10-15 minutos, sácala y deja que escurra bien antes de devolverla a su sitio. No dejes agua estancada en el plato ni las raíces en remojo permanente; procura no tocar las raíces aéreas si las tiene."},
+  "monstera":    {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en primavera/verano", poda:"Poda para controlar el tamaño", extra:"Limpia las hojas para que respiren mejor.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "dracena":     {agua:9,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en temporada de crecimiento", poda:"Corta las puntas secas", extra:"Sensible al exceso de riego.", riego:"Por arriba: deja secar la capa superior de tierra antes de volver a regar. Plato debajo, vaciándolo tras el riego. No toques las raíces salvo al trasplantar."},
+  "helecho":     {agua:4,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en primavera/verano", poda:"Retira frondes secas", extra:"Le gusta la humedad ambiental alta.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "hiedra":      {agua:6,  ubicacion:"Interior o exterior", luz:"Luz indirecta a semisombra", abono:"Cada 6 semanas en crecimiento", poda:"Poda para mantener forma y densidad", extra:"Crece rápido, ideal para colgar.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "rosal":       {agua:3,  ubicacion:"Exterior", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda fuerte en invierno/final de invierno", extra:"Vigila el pulgón en brotes nuevos.", riego:"Por arriba, riego abundante: empapa bien la tierra, con plato debajo para recoger el sobrante (vacíalo después). No toques las raíces salvo al trasplantar."},
+  "romero":      {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda ligera tras la floración", extra:"Mejor con poco riego que con exceso.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "menta":       {agua:3,  ubicacion:"Exterior o interior con luz", luz:"Sol o semisombra", abono:"Cada mes en crecimiento", poda:"Corta puntas para que ramifique", extra:"Es invasiva, mejor en maceta aparte.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "albahaca":    {agua:2,  ubicacion:"Exterior o interior soleado", luz:"Sol directo varias horas", abono:"Cada 3-4 semanas", poda:"Despunta las flores para que dure más", extra:"No le gusta el frío ni las corrientes.", riego:"Por arriba, manteniendo la tierra siempre algo húmeda sin encharcar. Plato debajo, vaciándolo si se acumula agua. No toques las raíces salvo al trasplantar."},
+  "tomate":      {agua:2,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 semanas en floración/fruto", poda:"Quita brotes laterales (chupones)", extra:"Necesita tutor o soporte.", riego:"Por arriba, riego abundante y regular: mantén un plato debajo para recoger el drenaje, pero no dejes la maceta permanentemente en remojo. No toques las raíces salvo al trasplantar."},
+  "geranio":     {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2-3 semanas en floración", poda:"Despunta flores secas y poda en otoño", extra:"Deja secar un poco la tierra entre riegos.", riego:"Deja secar la capa superior de la tierra entre riegos. Va bien un plato debajo (vacíalo tras regar) y no hace falta tocar las raíces salvo al trasplantar."},
+  "lavanda":     {agua:7,  ubicacion:"Exterior", luz:"Sol directo", abono:"Apenas necesita", poda:"Poda tras la floración", extra:"Prefiere tierra poco húmeda.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "suculenta":   {agua:12, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 2 meses en crecimiento", poda:"No suele necesitar", extra:"Riega solo cuando la tierra esté seca del todo.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "violeta africana": {agua:5, ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 2-4 semanas", poda:"Retira hojas y flores secas", extra:"Evita mojar las hojas al regar.", riego:"Sumerge la maceta unos minutos evitando mojar las hojas, luego escurre bien antes de devolverla a su sitio. No dejes agua en el plato."},
+  "planta de jade":   {agua:14, ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma cuando quieras", extra:"Muy sensible al exceso de agua.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "espatifilo":  {agua:5,  ubicacion:"Interior", luz:"Sombra o luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta flores y hojas secas", extra:"Las hojas caídas avisan de que necesita agua.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "bambu":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes si está en agua o tierra", poda:"Corta cañas para controlar altura", extra:"Si está en agua, cámbiala cada 1-2 semanas.", riego:"Mantén la tierra siempre algo húmeda (o cambia el agua cada 1-2 semanas si la tienes en agua). Si usas maceta con tierra, un plato con piedras y agua debajo ayuda a la humedad ambiental."},
+  "palmera":     {agua:6,  ubicacion:"Interior o exterior", luz:"Luz brillante indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas amarillas o secas", extra:"Le sienta bien pulverizar agua en las hojas.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "cinta":       {agua:5,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Corta puntas secas", extra:"Muy fácil de reproducir por esquejes.", riego:"Por arriba: deja secar un poco la tierra entre riegos. Plato debajo, vaciándolo después. No toques las raíces salvo al trasplantar."},
+  "pilea":       {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada mes en crecimiento", poda:"Retira hojas amarillas", extra:"Gira la maceta de vez en cuando para que crezca recta.", riego:"Deja secar la capa superior de la tierra entre riegos. Va bien un plato debajo (vacíalo tras regar) y no hace falta tocar las raíces salvo al trasplantar."},
+  "calathea":    {agua:4,  ubicacion:"Interior", luz:"Luz indirecta, nada de sol directo", abono:"Cada mes en primavera/verano", poda:"Retira hojas secas desde la base", extra:"Le gusta la humedad ambiental alta, evita el agua muy fría.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "peperomia":   {agua:8,  ubicacion:"Interior", luz:"Luz indirecta", abono:"Cada 6 semanas en crecimiento", poda:"Despunta para que ramifique", extra:"Deja secar la tierra entre riegos.", riego:"Deja secar la capa superior de la tierra entre riegos. Va bien un plato debajo (vacíalo tras regar) y no hace falta tocar las raíces salvo al trasplantar."},
+  "yuca":        {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante o sol suave", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta la caña si crece demasiado alta", extra:"Muy resistente a los olvidos de riego.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "kentia":      {agua:6,  ubicacion:"Interior", luz:"Luz indirecta brillante", abono:"Cada 6 semanas en crecimiento", poda:"Retira hojas secas o amarillas", extra:"Evita corrientes de aire frío.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "ave del paraiso": {agua:5, ubicacion:"Interior o exterior", luz:"Luz brillante, algo de sol", abono:"Cada mes en primavera/verano", poda:"Retira hojas rotas o secas", extra:"Necesita bastante espacio para crecer.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "adelfa":      {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración", extra:"Toda la planta es tóxica si se ingiere, cuidado con niños y mascotas.", riego:"Por arriba, riego abundante en verano: usa un plato debajo y vacíalo tras el riego. No toques las raíces salvo al trasplantar."},
+  "buganvilla":  {agua:6,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 3-4 semanas en floración", poda:"Poda fuerte en invierno", extra:"Florece más si se le da poco riego.", riego:"Deja secar un poco la tierra entre riegos (florece más así). Plato debajo, vaciándolo tras el riego. No toques las raíces salvo al trasplantar."},
+  "hortensia":   {agua:3,  ubicacion:"Exterior o interior luminoso", luz:"Semisombra", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda a final de invierno", extra:"Necesita bastante agua en verano, no dejes que se marchite.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "margarita":   {agua:4,  ubicacion:"Exterior", luz:"Sol directo", abono:"Cada mes en floración", poda:"Retira flores secas para que siga floreciendo", extra:"Muy agradecida y fácil de cuidar.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "pensamiento": {agua:4,  ubicacion:"Exterior o interior luminoso", luz:"Sol suave o semisombra", abono:"Cada 3-4 semanas en floración", poda:"Retira flores marchitas", extra:"Prefiere el frío, decae con mucho calor.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "tulipan":     {agua:5,  ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"No suele necesitar tras plantar el bulbo", poda:"Corta la flor cuando se seque", extra:"El bulbo se puede guardar para el año siguiente.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "azalea":      {agua:4,  ubicacion:"Interior o exterior en sombra", luz:"Luz brillante sin sol directo", abono:"Cada 3-4 semanas en crecimiento", poda:"Poda ligera tras la floración", extra:"Prefiere agua sin cal, mejor de lluvia si es posible.", riego:"Mantén la tierra siempre algo húmeda, a ser posible con agua sin cal (de lluvia o filtrada). Un plato con piedras y agua debajo ayuda a la humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "ciclamen":    {agua:5,  ubicacion:"Interior fresco", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas tirando desde la base", extra:"Prefiere ambientes frescos, no le gusta la calefacción cerca.", riego:"Sumerge la maceta unos minutos evitando mojar el centro de la planta (para que no se pudra), luego escurre bien. No dejes agua en el plato."},
+  "flor de pascua": {agua:6, ubicacion:"Interior", luz:"Luz brillante indirecta", abono:"Cada mes en crecimiento", poda:"No suele necesitar", extra:"Sensible al frío y a las corrientes de aire.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "drago":       {agua:10, ubicacion:"Interior o exterior", luz:"Luz brillante", abono:"Cada 6-8 semanas en crecimiento", poda:"Corta las puntas secas", extra:"Muy resistente, tolera bien el olvido.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "cala":        {agua:4,  ubicacion:"Interior o exterior en semisombra", luz:"Luz brillante indirecta", abono:"Cada 3-4 semanas en floración", poda:"Retira hojas y flores secas", extra:"Le gusta la tierra siempre algo húmeda.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "amarilis":    {agua:7,  ubicacion:"Interior", luz:"Luz brillante", abono:"Cada 3-4 semanas en crecimiento", poda:"Corta la flor cuando se seque, deja las hojas", extra:"Tras la floración, deja descansar el bulbo unos meses.", riego:"Por arriba, moderado: deja que la superficie se seque un poco entre riegos. Plato debajo, vaciándolo tras el riego."},
+  "begonia":     {agua:5,  ubicacion:"Interior o exterior en sombra", luz:"Luz indirecta", abono:"Cada mes en crecimiento", poda:"Despunta para que ramifique", extra:"Evita mojar las hojas al regar.", riego:"Por arriba, evitando mojar las hojas (para que no se manchen o pudran): riega directamente la tierra. Plato debajo, vaciándolo después."},
+  "gardenia":    {agua:4,  ubicacion:"Interior luminoso o exterior", luz:"Luz brillante, sol suave", abono:"Cada 3-4 semanas con abono para plantas ácidas", poda:"Poda ligera tras la floración", extra:"Necesita bastante humedad ambiental.", riego:"Mantén la tierra siempre algo húmeda, a ser posible con agua sin cal (de lluvia o filtrada). Un plato con piedras y agua debajo ayuda a la humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "jazmin":      {agua:5,  ubicacion:"Exterior o interior luminoso", luz:"Sol o semisombra", abono:"Cada mes en primavera/verano", poda:"Poda tras la floración para controlar forma", extra:"Muy aromático, ideal cerca de ventanas y terrazas.", riego:"Por arriba, dejando escurrir el exceso: riega hasta que salga agua por los agujeros de drenaje, usa un plato debajo y vacíalo a los 15-20 minutos para que la maceta no quede en remojo. No hace falta tocar las raíces salvo al trasplantar."},
+  "boj":         {agua:9,  ubicacion:"Exterior", luz:"Sol o semisombra", abono:"Cada 2 meses en crecimiento", poda:"Poda de forma 2-3 veces al año", extra:"Perfecto para setos y formas geométricas.", riego:"Por arriba, riego moderado: deja secar algo la superficie entre riegos. Plato debajo, vaciándolo después. No toques las raíces salvo al trasplantar."},
+  "oregano":     {agua:5,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Apenas necesita", poda:"Corta antes de que florezca para más aroma", extra:"Muy resistente, aguanta bien la sequía.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "cilantro":    {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las hojas exteriores primero", extra:"No le gusta el trasplante, mejor sembrar directo.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "perejil":     {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol o semisombra", abono:"Cada 3-4 semanas", poda:"Corta las ramas exteriores primero", extra:"Tarda en germinar, ten paciencia.", riego:"Mantén la tierra siempre algo húmeda, sin encharcar: un plato con piedras o grava y un poco de agua debajo (sin que la maceta toque el agua directamente) ayuda a mantener humedad ambiental. No toques las raíces salvo al trasplantar."},
+  "limonero":    {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Sensible al frío intenso, protégelo en heladas.", riego:"Por arriba, riego regular sin encharcar: usa un plato debajo y vacíalo si se acumula agua. No toques las raíces salvo al trasplantar."},
+  "naranjo":     {agua:4,  ubicacion:"Exterior o interior muy luminoso", luz:"Sol directo", abono:"Cada 3-4 semanas en primavera/verano", poda:"Poda ligera en primavera", extra:"Igual que el limonero, cuidado con las heladas.", riego:"Por arriba, riego regular sin encharcar: usa un plato debajo y vacíalo si se acumula agua. No toques las raíces salvo al trasplantar."},
+  "olivo":       {agua:10, ubicacion:"Exterior", luz:"Sol directo", abono:"Cada 2 meses en primavera/verano", poda:"Poda anual en primavera", extra:"Muy resistente a la sequía una vez asentado.", riego:"Deja secar la tierra del todo entre riegos (comprueba metiendo el dedo 2-3 cm): usa una maceta con buen drenaje y una capa de piedras o grava en el fondo. No dejes agua en el plato, y evita tocar las raíces salvo al trasplantar."},
+  "fresa":       {agua:3,  ubicacion:"Exterior o interior soleado", luz:"Sol directo", abono:"Cada 2-3 semanas en floración/fruto", poda:"Retira hojas secas y estolones si no los quieres usar", extra:"Riego regular pero sin encharcar.", riego:"Mantén la tierra siempre algo húmeda, sin llegar a encharcar: plato con piedras y agua debajo (sin tocar la maceta) para dar humedad ambiental. No toques las raíces salvo al trasplantar."}
 };
 function findPlantCare(name){
   const n = normalizePlantName(name);
@@ -4499,7 +4499,7 @@ function recordLifetimeCoverage(dateStr, memberIdx, key){
     }
   }
 }
-function houseFullCoverage(){
+function houseFullCoverage(justCompletedFlag){
   if(!STATE.lifetimeCoverage) backfillLifetimeCoverage();
   const lc = ensureLifetimeCoverageShape();
   const cristales = flatten('cristales');
@@ -4530,32 +4530,45 @@ function houseFullCoverage(){
   });
 
   const totalUnits = cristales.length + puertas.length + muebles.length + (rooms.length*STATE.roomTasks.length);
-  const doneUnits = Object.keys(lc.cristal).length + Object.keys(lc.puerta).length + Object.keys(lc.mueble).length + Object.keys(lc.roomtask).length;
-  const minutesRemaining = floors.reduce((s,f)=>s+f.rooms.reduce((s2,r)=>s2+r.minutesRemaining,0),0);
+  let doneUnits = Object.keys(lc.cristal).length + Object.keys(lc.puerta).length + Object.keys(lc.mueble).length + Object.keys(lc.roomtask).length;
+  let minutesRemaining = floors.reduce((s,f)=>s+f.rooms.reduce((s2,r)=>s2+r.minutesRemaining,0),0);
 
-  let estimatedDate = null;
-  if(minutesRemaining>0 && STATE.members.length){
+  let justCompleted = false;
+  if(totalUnits>0 && doneUnits>=totalUnits){
+    justCompleted = true;
+    STATE.lifetimeCoverage = {cristal:{},puerta:{},mueble:{},roomtask:{}};
+    save();
+    return houseFullCoverage(justCompleted);
+  }
+
+  let estimatedDate = null, estimatedNote = null;
+  if(!STATE.members.filter(m=>!m.mascotType).length){
+    estimatedNote = "Añade a alguien que participe para poder estimar una fecha.";
+  } else if(minutesRemaining<=0){
+    estimatedNote = null;
+  } else {
     const todayDi = dayIndexFor(dateToStr(new Date()));
     const windowDays = Math.min(21, todayDi+1);
-    if(windowDays>0){
-      let totalPaceMinutes = 0;
-      for(let i=0;i<windowDays;i++){
-        const ds = dateFromDayIndex(todayDi-i);
-        STATE.members.forEach((m,mi)=>{
-          const s = dayStatsForMember(ds, mi);
-          totalPaceMinutes += s.minutesDone;
-        });
-      }
-      const dailyPace = totalPaceMinutes / windowDays;
-      if(dailyPace > 0.5){
-        const daysNeeded = Math.ceil(minutesRemaining / dailyPace);
-        const target = new Date(); target.setDate(target.getDate()+daysNeeded);
-        estimatedDate = target.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
-      }
+    let totalPaceMinutes = 0;
+    for(let i=0;i<windowDays;i++){
+      const ds = dateFromDayIndex(todayDi-i);
+      STATE.members.forEach((m,mi)=>{
+        if(m.mascotType) return;
+        const s = dayStatsForMember(ds, mi);
+        totalPaceMinutes += s.minutesDone;
+      });
+    }
+    const dailyPace = totalPaceMinutes / Math.max(1,windowDays);
+    if(dailyPace > 0.5){
+      const daysNeeded = Math.ceil(minutesRemaining / dailyPace);
+      const target = new Date(); target.setDate(target.getDate()+daysNeeded);
+      estimatedDate = target.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    } else {
+      estimatedNote = "Todavía no hay ritmo suficiente estos últimos días para estimar una fecha.";
     }
   }
 
-  return { totalUnits, doneUnits, minutesRemaining, floors, estimatedDate };
+  return { totalUnits, doneUnits, minutesRemaining, floors, estimatedDate, estimatedNote, justCompleted: justCompletedFlag || justCompleted };
 }
 let houseCoverageOpenFloor = {};
 let houseCoverageOpenRoom = {};
@@ -4572,7 +4585,8 @@ function renderHouseFullCoverage(){
       <div class="streak-num">${cov.minutesRemaining}</div>
       <div><div style="font-weight:700;font-size:13px;">minutos para haber pasado por toda la casa</div><div class="streak-lbl">${cov.doneUnits}/${cov.totalUnits} tareas ya cubiertas al menos una vez (${pct}%)</div></div>
     </div>
-    ${cov.estimatedDate ? `<p class="muted" style="font-size:11px;margin-top:6px;">Al ritmo de estos últimos días, la casa estaría completa hacia el <strong style="color:var(--ink);">${cov.estimatedDate}</strong>.</p>` : ``}
+    ${cov.justCompleted ? `<p style="font-size:12px;margin-top:6px;color:var(--good);font-weight:700;">🎉 ¡Ciclo completo! Habéis pasado por toda la casa. Empieza uno nuevo desde cero.</p>` : ``}
+    ${cov.estimatedDate ? `<p class="muted" style="font-size:11px;margin-top:6px;">Al ritmo de estos últimos días, la casa estaría completa hacia el <strong style="color:var(--ink);">${cov.estimatedDate}</strong>.</p>` : (cov.estimatedNote ? `<p class="muted" style="font-size:11px;margin-top:6px;">${cov.estimatedNote}</p>` : ``)}
     <div class="bar-outer"><div class="bar-inner ${hpBarClass(pct)}" style="width:${pct}%"></div></div>
     <div style="margin-top:10px;">
       ${cov.floors.map((floor,fi)=>{
@@ -4684,25 +4698,32 @@ function renderProgreso(){
   }
   let totalAssigned=0, totalDone=0;
   let html = "";
+  let anyContributor = false;
   STATE.members.forEach((m,mi)=>{
+    if(m.mascotType) return;
+    anyContributor = true;
     const excused = isExcused(today, mi);
     const s = dayStatsForMember(today, mi);
     const assigned = s.tasks.reduce((a,t)=>a+t.min,0);
     totalAssigned += assigned; totalDone += s.minutesDone;
     const pct = assigned>0 ? Math.min(100, Math.round(s.minutesDone/assigned*100)) : (excused?100:0);
     const streak = currentStreak(mi);
-    html += `<div class="card" style="margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        ${memberAvatarHTML(m)}
-        <strong style="flex:1;">${m.name}</strong>
-        <span class="pixel" style="color:var(--pine);font-size:20px;">🔥${streak}</span>
+    html += `<div class="card" style="margin-bottom:8px;padding:9px 11px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        ${memberAvatarHTML(m,24)}
+        <strong style="flex:1;font-size:12.5px;">${m.name}</strong>
+        <span class="muted" style="font-size:11px;">🔥${streak}</span>
       </div>
-      ${excused ? '<p class="muted">De ausencia hoy, no cuenta para el reparto.</p>' :
-      `<div class="bar-row"><div class="bar-label">Hecho hoy</div><div class="bar-outer" style="flex:1;"><div class="bar-inner ${hpBarClass(pct)}" style="width:${pct}%"></div></div><div class="bar-val">${s.minutesDone}/${assigned} min</div></div>
-      <div class="muted" style="margin-top:4px;">Microtareas: ${s.microDone}/${DAILY_GOAL_MICRO}</div>`}
+      ${excused ? '<p class="muted" style="font-size:11px;margin:4px 0 0;">De ausencia hoy, no cuenta para el reparto.</p>' :
+      `<div class="bar-row" style="margin-top:5px;"><div class="bar-outer" style="flex:1;"><div class="bar-inner ${hpBarClass(pct)}" style="width:${pct}%"></div></div><div class="bar-val" style="font-size:10px;white-space:nowrap;">${s.minutesDone}/${assigned} min · ${s.microDone}/${DAILY_GOAL_MICRO} micro</div></div>`}
       ${evolutionChartHTML(mi)}
     </div>`;
   });
+  if(!anyContributor){
+    document.getElementById("progresoResumen").textContent = "";
+    document.getElementById("progresoMembers").innerHTML = emptyState("family","Solo hay cascarones por aquí","Añade a alguien que participe de verdad.");
+    return;
+  }
   const remaining = Math.max(0, totalAssigned-totalDone);
   document.getElementById("progresoResumen").innerHTML = `Tiempo restante hoy entre toda la familia: <strong>${remaining} min</strong> de ${totalAssigned} min asignados.`;
   document.getElementById("progresoMembers").innerHTML = html;
@@ -4720,12 +4741,11 @@ function evolutionChartHTML(memberIdx){
   const maxMin = Math.max(DAILY_GOAL_MIN, ...bars.map(b=>b.min));
   const barsHtml = bars.map(b=>{
     if(!b.valid) return `<div style="flex:1;height:3px;background:transparent;"></div>`;
-    const h = b.excused ? 4 : Math.max(3, Math.round((b.min/maxMin)*40));
+    const h = b.excused ? 4 : Math.max(3, Math.round((b.min/maxMin)*28));
     const color = b.excused ? 'var(--muted)' : (b.complete ? 'var(--good)' : (b.min>0 ? 'var(--mid)' : 'var(--line-solid)'));
     return `<div title="${b.ds}: ${b.min} min" style="flex:1;height:${h}px;background:${color};border:1px solid var(--line-solid);"></div>`;
   }).join("");
-  return `<div class="muted" style="font-size:9.5px;margin-top:8px;">Últimos 14 días</div>
-    <div style="display:flex;align-items:flex-end;gap:2px;height:44px;margin-top:3px;">${barsHtml}</div>`;
+  return `<div style="display:flex;align-items:flex-end;gap:2px;height:30px;margin-top:5px;">${barsHtml}</div>`;
 }
 
 /* ======================= PREMIOS: CEDER TAREA ======================= */
