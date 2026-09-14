@@ -256,7 +256,11 @@ input,select{font-family:inherit;font-size:15px;}
 <div id="authOverlay" style="position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;padding-top:calc(20px + env(safe-area-inset-top));">
   <div style="width:100%;max-width:360px;">
     <div style="text-align:center;margin-bottom:18px;">
-      <div style="font-weight:700;font-size:20px;">🏠 Deberes de casa</div>
+      <div style="font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <img id="authIcon" style="width:30px;height:30px;border-radius:8px;vertical-align:middle;" alt="">
+        <span>Deberes de casa</span>
+      </div>
+      <script>document.getElementById('authIcon').src = document.querySelector('link[rel="apple-touch-icon"]').href;</script>
       <p class="muted" id="authSubtitle">Cargando...</p>
     </div>
 
@@ -302,7 +306,7 @@ input,select{font-family:inherit;font-size:15px;}
 </div>
 
 <div class="topnav">
-  <div class="brand"><span><span id="brandIcon" style="vertical-align:middle;"></span> <span id="brandName">Deberes de casa</span></span><span class="hud-score pixel" id="hudScore"></span></div>
+  <div class="brand"><span style="display:flex;align-items:center;gap:5px;"><span id="brandIcon" style="display:flex;align-items:center;"></span><span id="brandName">Deberes de casa</span></span><span class="hud-score pixel" id="hudScore"></span></div>
   <div class="tabs" id="mainMenu"></div>
   <div class="tabs sub" id="subMenu" style="margin-top:6px;"></div>
 </div>
@@ -1067,6 +1071,8 @@ function applyHouseName(){
   const brandEl = document.getElementById("brandName");
   if(brandEl) brandEl.textContent = name;
   document.title = name;
+  const metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  if(metaTitle) metaTitle.setAttribute("content", name);
 }
 function applyDarkMode(on){
   const r = document.documentElement.style;
@@ -2883,6 +2889,7 @@ function detectImprovementCategory(text){
 }
 const IMPROVEMENT_CATEGORY_COLOR = { "Arreglo":"var(--danger)", "Reforma":"var(--mid)", "Compra":"var(--pine)", "Mejora general":"var(--muted)" };
 function renderImprovements(){
+  if(!Array.isArray(STATE.improvements)) STATE.improvements = [];
   const chipsEl = document.getElementById("improveFloorChips");
   const listEl = document.getElementById("improveRoomList");
   if(!chipsEl || !listEl) return;
