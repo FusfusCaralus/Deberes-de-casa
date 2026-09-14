@@ -401,6 +401,12 @@ input,select{font-family:inherit;font-size:15px;}
         </label>
       </div>
     </div>
+    <div class="card">
+      <h2>Mejoras de la casa</h2>
+      <p class="muted">Cosas pendientes de arreglar, reformar o comprar en cada estancia, para no perderlas de vista.</p>
+      <div class="floor-chips" id="improveFloorChips"></div>
+      <div id="improveRoomList"></div>
+    </div>
   </div>
 
   <!-- MICROTAREAS -->
@@ -785,7 +791,7 @@ const LINE_ICONS = {
   sparkle: { p:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', c:'#D9B23D' },
   warning: { p:'<path d="M12 4l9 15H3z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r="0.7" fill="currentColor" stroke="none"/>', c:'#C1544A' },
   droplet: { p:'<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>', c:'#4FA8D9' },
-  pill: { p:'<rect x="4" y="10.5" width="16" height="7" rx="3.5" transform="rotate(-35 12 14)"/><line x1="11" y1="8.5" x2="8.5" y2="11" transform="rotate(-35 12 14)"/>', c:'#C1544A' },
+  pill: { p:'<rect x="5" y="9.5" width="14" height="5" rx="2.5" transform="rotate(-45 12 12)"/><line x1="12" y1="9.5" x2="12" y2="14.5" transform="rotate(-45 12 12)"/>', c:'#C1544A' },
   snowflake:{ p:'<path d="M12 2v20M4 7l16 10M20 7L4 17"/>', c:'#7EC8E3' },
   flame:   { p:'<path d="M12 3c1 3-2 4.5-2 7.5a4 4 0 0 0 8 0c0-1.5-.5-2.5-1-3 0 2-1.5 3-2.5 2s-1-2 0-3.5c-1-1-2.5-1.8-2.5-3z"/>', c:'#E8703A' },
   trash:   { p:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>', c:'#8A8580' },
@@ -1166,7 +1172,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "" };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [] };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1191,6 +1197,7 @@ if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(STATE.darkMode===undefined) STATE.darkMode = false;
 if(STATE.houseName===undefined) STATE.houseName = "";
+if(!Array.isArray(STATE.improvements)) STATE.improvements = [];
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -2862,8 +2869,80 @@ function renderMonthDetail(){
 }
 
 /* ======================= MI CASA ======================= */
+const IMPROVEMENT_CATEGORY_KEYWORDS = {
+  "Arreglo": ["arreglar","reparar","avería","averiado","gotera","enchufe","grifo","bisagra","cerradura","persiana","atascad","rot","estropead","fuga"],
+  "Reforma": ["pintar","pintura","alicatar","azulejo","baldosa","tabique","reformar","reforma","suelo nuevo","techo","enlucir","empapelar","instalar suelo"],
+  "Compra": ["comprar","sofá","mesa","silla","lámpara","alfombra","cortina","mueble","armario","estantería","colchón","electrodoméstico","televisor","cuadro","espejo"]
+};
+function detectImprovementCategory(text){
+  const t = text.toLowerCase();
+  for(const cat of ["Arreglo","Reforma","Compra"]){
+    if(IMPROVEMENT_CATEGORY_KEYWORDS[cat].some(k=>t.includes(k))) return cat;
+  }
+  return "Mejora general";
+}
+const IMPROVEMENT_CATEGORY_COLOR = { "Arreglo":"var(--danger)", "Reforma":"var(--mid)", "Compra":"var(--pine)", "Mejora general":"var(--muted)" };
+function renderImprovements(){
+  const chipsEl = document.getElementById("improveFloorChips");
+  const listEl = document.getElementById("improveRoomList");
+  if(!chipsEl || !listEl) return;
+  chipsEl.innerHTML = "";
+  STATE.house.forEach((f,i)=>{
+    const b = document.createElement("button");
+    b.className = "floor-chip"+(i===selFloorIdx?" active":"");
+    b.textContent = f.name;
+    b.onclick = ()=>{ selFloorIdx=i; renderCasa(); renderImprovements(); };
+    chipsEl.appendChild(b);
+  });
+  const floor = STATE.house[selFloorIdx];
+  if(!floor){ listEl.innerHTML = emptyState("home","Ni una planta en pie","Añade una planta arriba primero."); return; }
+  if(!floor.rooms.length){ listEl.innerHTML = emptyState("home","Sin estancias en esta planta","Añade alguna arriba primero."); return; }
+  listEl.innerHTML = floor.rooms.map(room=>{
+    const items = STATE.improvements.filter(im=>im.roomId===room.id);
+    const itemsHTML = items.length ? items.map(im=>`
+      <div class="chore-row" style="${im.done?'opacity:.5;':''}">
+        <div class="cname" style="${im.done?'text-decoration:line-through;':''}" onclick="toggleImprovementDone('${im.id}')">
+          ${im.text}
+          <span class="pill" style="background:${IMPROVEMENT_CATEGORY_COLOR[im.category]};color:#fff;font-size:9px;margin-left:4px;">${im.category}</span>
+        </div>
+        <button onclick="removeImprovement('${im.id}')">✕</button>
+      </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Nada pendiente por aquí.</p>`;
+    return `<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px;">
+      <div style="font-weight:700;font-size:12px;margin-bottom:4px;">${room.name}</div>
+      ${itemsHTML}
+      <div class="row" style="margin-top:6px;">
+        <input type="text" id="newImprove_${room.id}" placeholder="Ej: pintar pared, comprar sofá, arreglar enchufe..." style="flex:1;">
+        <button class="btn small" onclick="addImprovement('${floor.id}','${room.id}')">+ Añadir</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function addImprovement(floorId, roomId){
+  const input = document.getElementById("newImprove_"+roomId);
+  const text = input.value.trim();
+  if(!text){ toast("Escribe qué quieres mejorar"); return; }
+  const category = detectImprovementCategory(text);
+  STATE.improvements.push({ id:"imp"+Date.now(), floorId, roomId, text, category, done:false });
+  input.value = "";
+  save();
+  renderImprovements();
+  toast("Añadido a "+category.toLowerCase());
+}
+function toggleImprovementDone(id){
+  const im = STATE.improvements.find(x=>x.id===id);
+  if(!im) return;
+  im.done = !im.done;
+  save();
+  renderImprovements();
+}
+function removeImprovement(id){
+  STATE.improvements = STATE.improvements.filter(x=>x.id!==id);
+  save();
+  renderImprovements();
+}
 let selFloorIdx = 0;
 function renderCasa(){
+  renderImprovements();
   const chipsEl = document.getElementById("floorChips");
   chipsEl.innerHTML = "";
   STATE.house.forEach((f,i)=>{
@@ -4352,6 +4431,7 @@ if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(STATE.darkMode===undefined) STATE.darkMode = false;
 if(STATE.houseName===undefined) STATE.houseName = "";
+if(!Array.isArray(STATE.improvements)) STATE.improvements = [];
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
