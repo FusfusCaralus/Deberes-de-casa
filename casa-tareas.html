@@ -1391,24 +1391,80 @@ function rotIndex(di, memberIdx, nMembers, length){
   const cycleNum = Math.floor(di / length);
   return (((slot + cycleNum) % length) + length) % length;
 }
-function dailyTasksForMember(dateStr, memberIdx){
+// Reparto por zonas: cada miembro recorre la casa estancia a estancia en vez de saltar
+// de un extremo a otro. Con 2 personas, una empieza por un extremo y la otra por el
+// contrario, encontrándose a medio camino; al completar una vuelta entera, se invierte
+// quién empieza por dónde. Con 3 o más, la casa se reparte en tramos que van rotando
+// de persona en persona en cada vuelta.
+function memberZoneRoomIndex(di, memberIdx, nMembers, totalRooms){
+  if(totalRooms<=0) return -1;
+  const cycleNum = Math.floor(di / totalRooms);
+  const dayInCycle = ((di % totalRooms) + totalRooms) % totalRooms;
+  if(nMembers <= 1) return dayInCycle;
+  if(nMembers === 2){
+    const goesForward = (memberIdx===0) !== (cycleNum % 2 === 1);
+    return goesForward ? dayInCycle : (totalRooms - 1 - dayInCycle);
+  }
+  const rotatedMemberIdx = ((memberIdx + cycleNum) % nMembers + nMembers) % nMembers;
+  const zoneSize = totalRooms / nMembers;
+  const zoneStart = Math.floor(rotatedMemberIdx * zoneSize);
+  const zoneEnd = Math.floor((rotatedMemberIdx+1) * zoneSize);
+  const zoneLen = Math.max(1, zoneEnd - zoneStart);
+  return zoneStart + (dayInCycle % zoneLen);
+}
+function assignedZoneRoom(dateStr, memberIdx){
   const di = dayIndexFor(dateStr);
+  const rooms = flatten('rooms');
+  const nMembers = Math.max(STATE.members.length,1);
+  const idx = memberZoneRoomIndex(di, memberIdx, nMembers, rooms.length);
+  return idx>=0 ? rooms[idx] : null;
+}
+// Busca el elemento (cristal/puerta/mueble) de esa estancia; si no tiene, expande la
+// búsqueda a las estancias más próximas en el recorrido de la casa.
+function nearestItemForRoom(items, targetRoomId, roomsOrdered, di){
+  const own = items.filter(it=>it.roomId===targetRoomId);
+  if(own.length) return own[((di % own.length) + own.length) % own.length];
+  const targetIdx = roomsOrdered.findIndex(r=>r.roomId===targetRoomId);
+  if(targetIdx>=0){
+    for(let d=1; d<roomsOrdered.length; d++){
+      for(const dir of [1,-1]){
+        const idx = targetIdx + d*dir;
+        if(idx<0 || idx>=roomsOrdered.length) continue;
+        const found = items.filter(it=>it.roomId===roomsOrdered[idx].roomId);
+        if(found.length) return found[((di % found.length) + found.length) % found.length];
+      }
+    }
+  }
+  return items[((di % items.length) + items.length) % items.length];
+}
+function assignedItemOfType(type, dateStr, memberIdx){
+  const list = flatten(type);
+  if(!list.length) return null;
+  const di = dayIndexFor(dateStr);
+  const nMembers = Math.max(STATE.members.length,1);
+  const targetRoom = assignedZoneRoom(dateStr, memberIdx);
+  if(targetRoom){
+    const rooms = flatten('rooms');
+    return nearestItemForRoom(list, targetRoom.roomId, rooms, di);
+  }
+  return list[rotIndex(di,memberIdx,nMembers,list.length)];
+}
+function dailyTasksForMember(dateStr, memberIdx){
   const cristales = flatten('cristales');
   const puertas = flatten('puertas');
   const muebles = flatten('muebles');
   const rooms = flatten('rooms');
-  const nMembers = Math.max(STATE.members.length,1);
-  const slot = di*nMembers + memberIdx;
   const tasks = [];
-  if(cristales.length){ const it=cristales[rotIndex(di,memberIdx,nMembers,cristales.length)]; tasks.push({icon:"window", tipo:"Cristal", title: it.label, min: it.min, key:"cristal"}); }
-  if(puertas.length){ const it=puertas[rotIndex(di,memberIdx,nMembers,puertas.length)]; tasks.push({icon:"door", tipo:"Puerta", title: it.label, min: it.min, key:"puerta"}); }
-  if(muebles.length){ const it=muebles[rotIndex(di,memberIdx,nMembers,muebles.length)]; tasks.push({icon:"chair", tipo:"Mueble", title: it.label, min: it.min, key:"mueble"}); }
+  if(cristales.length){ const it=assignedItemOfType('cristales', dateStr, memberIdx); tasks.push({icon:"window", tipo:"Cristal", title: it.label, min: it.min, key:"cristal"}); }
+  if(puertas.length){ const it=assignedItemOfType('puertas', dateStr, memberIdx); tasks.push({icon:"door", tipo:"Puerta", title: it.label, min: it.min, key:"puerta"}); }
+  if(muebles.length){ const it=assignedItemOfType('muebles', dateStr, memberIdx); tasks.push({icon:"chair", tipo:"Mueble", title: it.label, min: it.min, key:"mueble"}); }
   if(rooms.length && STATE.roomTasks.length){
-    STATE.roomTasks.forEach((rt, idx)=>{
-      const offset = Math.ceil(rooms.length*idx/STATE.roomTasks.length);
-      const r = rooms[(rotIndex(di,memberIdx,nMembers,rooms.length)+offset) % rooms.length];
-      tasks.push({icon: rt.icon||"sparkle", tipo: rt.name, title: r.label, min: rt.min, key: "roomtask-"+rt.id});
-    });
+    const targetRoom = assignedZoneRoom(dateStr, memberIdx);
+    if(targetRoom){
+      STATE.roomTasks.forEach(rt=>{
+        tasks.push({icon: rt.icon||"sparkle", tipo: rt.name, title: targetRoom.label, min: rt.min, key: "roomtask-"+rt.id});
+      });
+    }
   }
   return tasks;
 }
@@ -1684,26 +1740,57 @@ function openDoMoreModal(){
   `;
   openModal();
 }
+const LAUNDRY_PROCESS_STEPS = [
+  {id:"cargar", name:"Cargar la lavadora", min:3},
+  {id:"descargar", name:"Descargar la lavadora", min:3},
+  {id:"tender", name:"Tender la ropa", min:10},
+  {id:"recoger", name:"Recoger la ropa tendida", min:8},
+  {id:"doblar", name:"Doblar la ropa", min:10},
+  {id:"guardar", name:"Guardar la ropa doblada", min:8}
+];
 function openDoMoreColada(){
   const today = dateToStr(new Date());
   const body = document.getElementById("modalBody");
-  if(!STATE.lavadosProgramados.length){
-    body.innerHTML = `<button class="close-x" onclick="closeModal()">✕</button><h3>Colada</h3><p class="muted">No hay lavados programados todavía. Añade alguno en Casa → Colada.</p>`;
-    openModal();
-    return;
-  }
-  body.innerHTML = `<button class="close-x" onclick="closeModal()">✕</button><h3>Colada</h3><p class="muted">Adelanta cualquiera de los lavados programados, aunque no le toque esta semana.</p>` +
-    STATE.lavadosProgramados.map(lv=>{
-      const key = "household-lavado-"+lv.id+"-extravol-"+today;
-      const done = isDone(today, selMemberIdx, key);
-      return `<div class="task ${done?'done':''}" ${done?'':`onclick="doExtraColada('${lv.id}')"`} style="padding:5px 2px;${done?'opacity:.5;':''}cursor:${done?'default':'pointer'};">
-        <div class="check" style="${done?'background:var(--good);border-color:var(--line-solid);color:#fff;':''}">${done?'✓':''}</div>
-        <div class="ticon">${pixelIcon('basket',14)}</div>
-        <div class="tinfo"><div class="ttitle">${lv.name}</div><div class="tsub">Cada ${lv.everyWeeks} semana${lv.everyWeeks>1?'s':''}</div></div>
-        <div class="ttime">+${HOUSEHOLD_POINTS_PER_TASK} pts</div>
-      </div>`;
-    }).join("");
+  let html = `<button class="close-x" onclick="closeModal()">✕</button><h3>Colada</h3><p class="muted">Adelanta un lavado programado, o marca cualquier paso del proceso que hayas hecho.</p>`;
+  html += `<div class="badge-group-title">Lavados programados</div>`;
+  html += STATE.lavadosProgramados.length ? STATE.lavadosProgramados.map(lv=>{
+    const key = "household-lavado-"+lv.id+"-extravol-"+today;
+    const done = isDone(today, selMemberIdx, key);
+    return `<div class="task ${done?'done':''}" ${done?'':`onclick="doExtraColada('${lv.id}')"`} style="padding:5px 2px;${done?'opacity:.5;':''}cursor:${done?'default':'pointer'};">
+      <div class="check" style="${done?'background:var(--good);border-color:var(--line-solid);color:#fff;':''}">${done?'✓':''}</div>
+      <div class="ticon">${pixelIcon('basket',14)}</div>
+      <div class="tinfo"><div class="ttitle">${lv.name}</div><div class="tsub">Cada ${lv.everyWeeks} semana${lv.everyWeeks>1?'s':''}</div></div>
+      <div class="ttime">+${HOUSEHOLD_POINTS_PER_TASK} pts</div>
+    </div>`;
+  }).join("") : `<p class="muted" style="font-size:10.5px;">No hay lavados programados. Añade alguno en Colada.</p>`;
+  html += `<div class="badge-group-title">Pasos de la colada de hoy</div>`;
+  html += LAUNDRY_PROCESS_STEPS.map(step=>{
+    const key = "extravol-laundrystep-"+step.id+"-"+today;
+    const done = isDone(today, selMemberIdx, key);
+    return `<div class="task ${done?'done':''}" ${done?'':`onclick="doExtraLaundryStep('${step.id}')"`} style="padding:5px 2px;${done?'opacity:.5;':''}cursor:${done?'default':'pointer'};">
+      <div class="check" style="${done?'background:var(--good);border-color:var(--line-solid);color:#fff;':''}">${done?'✓':''}</div>
+      <div class="ticon">${pixelIcon('basket',14)}</div>
+      <div class="tinfo"><div class="ttitle">${step.name}</div></div>
+      <div class="ttime">${step.min} min</div>
+    </div>`;
+  }).join("");
+  body.innerHTML = html;
   openModal();
+}
+function doExtraLaundryStep(stepId){
+  const today = dateToStr(new Date());
+  const step = LAUNDRY_PROCESS_STEPS.find(s=>s.id===stepId);
+  if(!step) return;
+  const key = "extravol-laundrystep-"+stepId+"-"+today;
+  if(isDone(today, selMemberIdx, key)) return;
+  toggleDone(today, selMemberIdx, key);
+  updateStats(selMemberIdx, {min:step.min, key:"laundry"}, 1);
+  sfxDone();
+  toast("Sumado: "+step.name);
+  maybeMascotCheer();
+  openDoMoreColada();
+  if(currentView==="hoy") renderHoy();
+  updateHud();
 }
 function doExtraColada(lavadoId){
   const today = dateToStr(new Date());
@@ -2393,13 +2480,28 @@ const MASCOT_POOLS = {
     ]
   }
 };
+function stickyToast(msg, onDismiss){
+  const t = document.getElementById("toast");
+  clearTimeout(window._toastTimer);
+  document.removeEventListener("click", window._stickyDismissHandler||(()=>{}), true);
+  t.textContent = msg;
+  t.classList.add("show");
+  window._stickyDismissHandler = function(){
+    t.classList.remove("show");
+    document.removeEventListener("click", window._stickyDismissHandler, true);
+    if(onDismiss) onDismiss();
+  };
+  setTimeout(()=>{
+    document.addEventListener("click", window._stickyDismissHandler, {capture:true});
+  }, 350);
+}
 function maybeMascotCheer(){
   const mascots = STATE.members.filter(m=>m.mascotType);
   if(!mascots.length) return;
   if(Math.random() >= 0.2) return;
   const mascot = mascots[Math.floor(Math.random()*mascots.length)];
   const msg = randomMascotMessage(mascot.mascotType);
-  toast(mascot.name+": \""+msg+"\"");
+  stickyToast(mascot.name+": \""+msg+"\"");
 }
 function mascotMessagePool(mascotType, dateStr){
   const pools = MASCOT_POOLS[mascotType] || MASCOT_POOLS.mascota;
@@ -2634,14 +2736,14 @@ function checkPendingCongratsForMember(memberIdx){
   if(count <= 0) return;
   delete STATE.pendingCongrats[m.id];
   save();
-  for(let i=0;i<count;i++){
-    setTimeout(()=>{
-      const msg = CONGRATS_MESSAGES[Math.floor(Math.random()*CONGRATS_MESSAGES.length)].replace(/\{name\}/g, m.name);
-      launchConfetti();
-      sfxBadge();
-      toast(msg, 3400);
-    }, i*1900);
-  }
+  showCongratsQueue(m.name, count);
+}
+function showCongratsQueue(name, remaining){
+  if(remaining<=0) return;
+  const msg = CONGRATS_MESSAGES[Math.floor(Math.random()*CONGRATS_MESSAGES.length)].replace(/\{name\}/g, name);
+  launchConfetti();
+  sfxBadge();
+  stickyToast(msg, ()=>showCongratsQueue(name, remaining-1));
 }
 
 function toggleDoneUI(dateStr, memberIdx, key){
@@ -3707,8 +3809,9 @@ function removeMedTimeSlot(i){
 function petFormHTML(p){
   const isEdit = !!p;
   const medsHTML = isEdit ? (p.medications||[]).map(med=>`
-    <div class="chore-row">
-      <div class="cname">${med.name} <span class="muted" style="font-size:9.5px;">(${medFreqLabel(med)})</span></div>
+    <div class="chore-row" style="align-items:center;">
+      <span style="flex:0 0 auto;margin-right:6px;">${pixelIcon('pill',18)}</span>
+      <div class="cname" style="font-size:14px;font-weight:700;">${med.name}<div class="muted" style="font-size:10.5px;font-weight:400;margin-top:1px;">${medFreqLabel(med)}</div></div>
       <button onclick="removePetMedication('${p.id}','${med.id}')">✕</button>
     </div>`).join("") : "";
   const vaxHTML = isEdit ? (p.vaccines||[]).map(v=>`
@@ -4782,27 +4885,19 @@ function ensureLifetimeCoverageShape(){
 }
 function recordLifetimeCoverage(dateStr, memberIdx, key){
   const lc = ensureLifetimeCoverageShape();
-  const di = dayIndexFor(dateStr);
-  const nMembers = Math.max(STATE.members.length,1);
   if(key==='cristal'){
-    const list = flatten('cristales');
-    if(list.length){ const it = list[rotIndex(di,memberIdx,nMembers,list.length)]; if(it) STATE.lifetimeCoverage.cristal[it.itemId]=true; }
+    const it = assignedItemOfType('cristales', dateStr, memberIdx);
+    if(it) lc.cristal[it.itemId]=true;
   } else if(key==='puerta'){
-    const list = flatten('puertas');
-    if(list.length){ const it = list[rotIndex(di,memberIdx,nMembers,list.length)]; if(it) STATE.lifetimeCoverage.puerta[it.itemId]=true; }
+    const it = assignedItemOfType('puertas', dateStr, memberIdx);
+    if(it) lc.puerta[it.itemId]=true;
   } else if(key==='mueble'){
-    const list = flatten('muebles');
-    if(list.length){ const it = list[rotIndex(di,memberIdx,nMembers,list.length)]; if(it) STATE.lifetimeCoverage.mueble[it.itemId]=true; }
+    const it = assignedItemOfType('muebles', dateStr, memberIdx);
+    if(it) lc.mueble[it.itemId]=true;
   } else if(key.indexOf('roomtask-')===0){
     const rtId = key.slice('roomtask-'.length);
-    const rooms = flatten('rooms');
-    const rtIdx = STATE.roomTasks.findIndex(rt=>rt.id===rtId);
-    if(rooms.length && rtIdx>=0){
-      const offset = Math.ceil(rooms.length*rtIdx/STATE.roomTasks.length);
-      const roomIdx = (rotIndex(di,memberIdx,nMembers,rooms.length)+offset) % rooms.length;
-      const room = rooms[roomIdx];
-      if(room) STATE.lifetimeCoverage.roomtask[rtId+"|"+room.roomId] = true;
-    }
+    const targetRoom = assignedZoneRoom(dateStr, memberIdx);
+    if(targetRoom) lc.roomtask[rtId+"|"+targetRoom.roomId] = true;
   }
 }
 function houseFullCoverage(justCompletedFlag){
