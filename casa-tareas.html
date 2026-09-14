@@ -410,6 +410,7 @@ input,select{font-family:inherit;font-size:15px;}
       <p class="muted">Cosas pendientes de arreglar, reformar o comprar en cada estancia, para no perderlas de vista.</p>
       <div class="floor-chips" id="improveFloorChips"></div>
       <div id="improveRoomList"></div>
+      <button class="btn secondary block" style="margin-top:12px;" onclick="printImprovementShoppingList()">🖨️ Listado de compras pendientes (mejoras)</button>
     </div>
   </div>
 
@@ -2707,6 +2708,25 @@ function printCuadrante(){
   window.print();
 }
 let showPastDays = false;
+function printImprovementShoppingList(){
+  const pending = STATE.improvements.filter(im=>im.category==='Compra' && !im.done);
+  if(!pending.length){ toast("No hay compras pendientes de mejoras ahora mismo"); return; }
+  const houseName = (STATE.houseName||"").trim() || "Deberes de casa";
+  let html = `<h1 style="font-family:-apple-system,sans-serif;margin-bottom:2px;">${houseName}</h1>
+    <p style="font-family:-apple-system,sans-serif;color:#555;margin-top:0;margin-bottom:16px;">Compras pendientes de mejoras — ${new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})}</p>`;
+  STATE.house.forEach(floor=>{
+    floor.rooms.forEach(room=>{
+      const items = pending.filter(im=>im.roomId===room.id);
+      if(!items.length) return;
+      html += `<h3 style="font-family:-apple-system,sans-serif;margin-bottom:4px;">${room.name} <span style="font-weight:400;color:#777;font-size:13px;">(${floor.name})</span></h3>
+        <ul style="font-family:-apple-system,sans-serif;font-size:14px;margin-top:0;">
+          ${items.map(im=>`<li>☐ ${im.text}</li>`).join("")}
+        </ul>`;
+    });
+  });
+  document.getElementById("printCuadrante").innerHTML = html;
+  window.print();
+}
 function togglePastDays(){ showPastDays = !showPastDays; renderSemana(); }
 function weekDayBlockHTML(d){
   const todayStr = dateToStr(new Date());
@@ -2906,19 +2926,28 @@ function renderImprovements(){
   if(!floor.rooms.length){ listEl.innerHTML = emptyState("home","Sin estancias en esta planta","Añade alguna arriba primero."); return; }
   listEl.innerHTML = floor.rooms.map(room=>{
     const items = STATE.improvements.filter(im=>im.roomId===room.id);
-    const itemsHTML = items.length ? items.map(im=>`
-      <div class="chore-row" style="${im.done?'opacity:.5;':''}">
-        <div class="cname" style="${im.done?'text-decoration:line-through;':''}" onclick="toggleImprovementDone('${im.id}')">
-          ${im.text}
-          <span class="pill" style="background:${IMPROVEMENT_CATEGORY_COLOR[im.category]};color:#fff;font-size:9px;margin-left:4px;">${im.category}</span>
-        </div>
-        <button onclick="removeImprovement('${im.id}')">✕</button>
-      </div>`).join("") : `<p class="muted" style="font-size:10.5px;">Nada pendiente por aquí.</p>`;
+    let itemsHTML;
+    if(!items.length){
+      itemsHTML = `<p class="muted" style="font-size:10.5px;">Nada pendiente por aquí.</p>`;
+    } else {
+      const cats = ["Arreglo","Reforma","Compra","Mejora general"];
+      itemsHTML = cats.map(cat=>{
+        const inCat = items.filter(im=>im.category===cat);
+        if(!inCat.length) return "";
+        return `<div class="badge-group-title" style="color:${IMPROVEMENT_CATEGORY_COLOR[cat]};">${cat}</div>` +
+          inCat.map(im=>`
+          <div class="chore-row" style="${im.done?'opacity:.5;':''}">
+            <div class="cname" style="${im.done?'text-decoration:line-through;':''}" onclick="toggleImprovementDone('${im.id}')">${im.text}</div>
+            <button onclick="removeImprovement('${im.id}')">✕</button>
+          </div>`).join("");
+      }).join("");
+    }
     return `<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px;">
       <div style="font-weight:700;font-size:12px;margin-bottom:4px;">${room.name}</div>
       ${itemsHTML}
       <div class="row" style="margin-top:6px;">
         <input type="text" id="newImprove_${room.id}" placeholder="Ej: pintar pared, comprar sofá, arreglar enchufe..." style="flex:1;">
+        <button class="btn small secondary" id="voiceImproveBtn_${room.id}" onclick="toggleVoiceImprovement('${floor.id}','${room.id}')">🎤</button>
         <button class="btn small" onclick="addImprovement('${floor.id}','${room.id}')">+ Añadir</button>
       </div>
     </div>`;
@@ -2946,6 +2975,106 @@ function removeImprovement(id){
   STATE.improvements = STATE.improvements.filter(x=>x.id!==id);
   save();
   renderImprovements();
+}
+function extractImprovementItems(transcript){
+  return splitIntoSubitems(transcript)
+    .map(cleanShoppingItem)
+    .filter(s=>s.length>1 && !VOICE_FILLERS.includes(s.toLowerCase()))
+    .map(s=>s.charAt(0).toUpperCase()+s.slice(1));
+}
+let voiceImproveListening = false;
+let voiceImproveRecognition = null;
+let voiceImproveContext = null;
+function toggleVoiceImprovement(floorId, roomId){
+  const Ctor = getSpeechRecognitionCtor();
+  const btn = document.getElementById("voiceImproveBtn_"+roomId);
+  if(!Ctor){
+    toast("Este navegador no sabe escucharte. Prueba a escribirlo, que tampoco cuesta tanto.");
+    return;
+  }
+  if(voiceImproveListening){
+    voiceUserStopped = true;
+    try{ voiceImproveRecognition.stop(); }catch(e){}
+    return;
+  }
+  try{
+    voiceFullTranscript = "";
+    voiceUserStopped = false;
+    voiceImproveContext = {floorId, roomId};
+    voiceImproveRecognition = new Ctor();
+    voiceImproveRecognition.lang = "es-ES";
+    voiceImproveRecognition.continuous = true;
+    voiceImproveRecognition.interimResults = false;
+    voiceImproveRecognition.onstart = ()=>{
+      voiceImproveListening = true;
+      if(btn){ btn.textContent = "🎙️..."; btn.style.borderColor = "var(--danger)"; btn.style.color = "var(--danger)"; }
+    };
+    voiceImproveRecognition.onresult = (event)=>{
+      let chunk = "";
+      for(let i=event.resultIndex; i<event.results.length; i++){
+        if(event.results[i].isFinal) chunk += event.results[i][0].transcript + ". ";
+      }
+      voiceFullTranscript += chunk;
+    };
+    voiceImproveRecognition.onerror = (event)=>{
+      if(event.error === 'not-allowed' || event.error === 'service-not-allowed'){
+        voiceUserStopped = true;
+        toast("No te hemos podido escuchar: falta permiso de micrófono.");
+      } else if(event.error !== 'no-speech' && event.error !== 'aborted'){
+        toast("El micrófono se ha hecho el remolón. Prueba otra vez o escríbelo a mano.");
+      }
+    };
+    voiceImproveRecognition.onend = ()=>{
+      if(!voiceUserStopped){
+        try{ voiceImproveRecognition.start(); return; }catch(e){}
+      }
+      voiceImproveListening = false;
+      if(btn){ btn.textContent = "🎤"; btn.style.borderColor = ""; btn.style.color = ""; }
+      if(voiceFullTranscript.trim()) openImprovementVoiceReview(voiceFullTranscript, voiceImproveContext.floorId, voiceImproveContext.roomId);
+      else toast("No he pillado nada. ¿Lo intentamos otra vez?");
+    };
+    voiceImproveRecognition.start();
+  }catch(e){
+    toast("No se ha podido activar el micrófono en este dispositivo.");
+  }
+}
+function openImprovementVoiceReview(transcript, floorId, roomId){
+  const items = extractImprovementItems(transcript);
+  if(!items.length){
+    toast("No he pillado nada ahí. ¿Lo intentamos de nuevo?");
+    return;
+  }
+  const body = document.getElementById("modalBody");
+  body.innerHTML = `
+    <button class="close-x" onclick="closeModal()">✕</button>
+    <h3>¿Añado esto?</h3>
+    <p class="muted">Repasa y quita lo que sobre antes de confirmar.</p>
+    <div id="voiceImproveReviewList">
+      ${items.map((it,i)=>`
+        <div class="chore-row" id="voiceImproveItem_${i}">
+          <div class="cname">${it} <span class="pill" style="background:${IMPROVEMENT_CATEGORY_COLOR[detectImprovementCategory(it)]};color:#fff;font-size:9px;margin-left:4px;">${detectImprovementCategory(it)}</span></div>
+          <button onclick="document.getElementById('voiceImproveItem_${i}').remove()">✕</button>
+        </div>`).join("")}
+    </div>
+    <button class="btn block" style="margin-top:10px;" onclick="confirmVoiceImprovements('${floorId}','${roomId}')">Añadir a la lista</button>
+  `;
+  window._voiceImproveItemsPending = items;
+  openModal();
+}
+function confirmVoiceImprovements(floorId, roomId){
+  const rows = document.querySelectorAll('#voiceImproveReviewList .chore-row');
+  let added = 0;
+  rows.forEach(row=>{
+    const text = row.querySelector('.cname').firstChild.textContent.trim();
+    if(!text) return;
+    const category = detectImprovementCategory(text);
+    STATE.improvements.push({ id:"imp"+Date.now()+Math.random().toString(36).slice(2,5), floorId, roomId, text, category, done:false });
+    added++;
+  });
+  save();
+  closeModal();
+  renderImprovements();
+  toast(added+" mejora"+(added===1?'':'s')+" añadida"+(added===1?'':'s'));
 }
 let selFloorIdx = 0;
 function renderCasa(){
