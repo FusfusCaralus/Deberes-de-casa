@@ -233,6 +233,21 @@ input,select{font-family:inherit;font-size:15px;}
   #printCuadrante, #printCuadrante *{visibility:visible;}
   #printCuadrante{display:block !important;position:absolute;top:0;left:0;width:100%;padding:20px;}
 }
+@keyframes pawRise{
+  0%{ transform:translateY(20px) scale(0.85) rotate(var(--rot,0deg)); opacity:0; }
+  12%{ opacity:0.9; }
+  85%{ opacity:0.8; }
+  100%{ transform:translateY(-115vh) scale(1) rotate(var(--rot,0deg)); opacity:0; }
+}
+@keyframes tearFall{
+  0%{ transform:translate(-50%,-50%) scale(0.5); opacity:0; }
+  12%{ opacity:1; }
+  100%{ transform:translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity:0; }
+}
+.mascot-fx-overlay{position:fixed;inset:0;pointer-events:none;z-index:400;overflow:hidden;}
+.mascot-fx-paw{position:absolute;bottom:-30px;}
+.mascot-fx-tear{position:absolute;top:50%;left:50%;}
+.mascot-sad-box{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--line-solid);margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -429,8 +444,14 @@ input,select{font-family:inherit;font-size:15px;}
         <input type="text" id="newMemberName" placeholder="Ej: Ana">
       </div>
       <label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:12px;">
-        <input type="checkbox" id="newMemberIsMascot"> Es mascota o peque: no participa en el reparto, solo anima
+        <input type="checkbox" id="newMemberIsMascot" onchange="document.getElementById('newMemberMascotTypeRow').style.display=this.checked?'block':'none';"> Es mascota o peque: no participa en el reparto, solo anima
       </label>
+      <div id="newMemberMascotTypeRow" style="display:none;margin-bottom:10px;">
+        <select id="newMemberMascotType">
+          <option value="mascota">Es una mascota</option>
+          <option value="peque">Es un peque</option>
+        </select>
+      </div>
       <button class="btn block" onclick="addMember()">+ Añadir persona</button>
     </div>
     <div class="card">
@@ -1174,7 +1195,7 @@ if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
 if(!STATE.vacations) STATE.vacations = [];
 if(!STATE.laundryLoads) STATE.laundryLoads = [];
-STATE.members.forEach((m,i)=>{ if(!m.id) m.id = "m"+Date.now()+"-"+i; if(m.avatar===undefined) m.avatar = null; if(m.linkedUid===undefined) m.linkedUid = null; if(m.linkedEmail===undefined) m.linkedEmail = null; if(!m.avatarFill) m.avatarFill = "transparent"; if(m.isMascot===undefined) m.isMascot = false; });
+STATE.members.forEach((m,i)=>{ if(!m.id) m.id = "m"+Date.now()+"-"+i; if(m.avatar===undefined) m.avatar = null; if(m.linkedUid===undefined) m.linkedUid = null; if(m.linkedEmail===undefined) m.linkedEmail = null; if(!m.avatarFill) m.avatarFill = "transparent"; if(m.mascotType===undefined) m.mascotType = (m.isMascot ? "mascota" : ""); delete m.isMascot; });
 if(!STATE.settings) STATE.settings = {...DEFAULT_SETTINGS};
 else {
   const oldSettings = STATE.settings;
@@ -1477,6 +1498,7 @@ function toggleHouseholdDone(key, memberIdx){
     STATE.householdDone[key] = memberId(memberIdx);
     if(t) updateStats(memberIdx, t, 1);
     sfxDone();
+    maybeMascotCheer();
   }
   save();
   updateHud();
@@ -1611,6 +1633,7 @@ function helpWithTask(ownerMemberIdx, key){
   const ownerName = STATE.members[ownerMemberIdx].name;
   const helperName = STATE.members[selMemberIdx].name;
   toast(helperName+" ha ayudado a "+ownerName+" con "+task.tipo.toLowerCase());
+  maybeMascotCheer();
   openHelpHouseModal();
   if(currentView==="hoy") renderHoy();
   updateHud();
@@ -1659,6 +1682,7 @@ function doExtraColada(lavadoId){
   updateStats(selMemberIdx, {min:0, key}, 1);
   sfxDone();
   toast("Sumado: "+lv.name);
+  maybeMascotCheer();
   openDoMoreColada();
   if(currentView==="hoy") renderHoy();
   updateHud();
@@ -1694,6 +1718,7 @@ function doExtraChore(choreId){
   updateStats(selMemberIdx, {min:c.min, key:"extra-"+c.id}, 1);
   sfxDone();
   toast("Sumado: "+c.name);
+  maybeMascotCheer();
   openDoMoreChores();
   if(currentView==="hoy") renderHoy();
   updateHud();
@@ -1754,6 +1779,7 @@ function doExtraSpecificItem(type, itemId, min){
   updateStats(selMemberIdx, {min:min, key:type}, 1);
   sfxDone();
   toast("Sumado");
+  maybeMascotCheer();
   openDoMoreRoom();
   if(currentView==="hoy") renderHoy();
   updateHud();
@@ -1770,6 +1796,7 @@ function doExtraRoomTask(roomId, rtId){
   updateStats(selMemberIdx, {min:rt.min, key:"roomtask-"+rtId}, 1);
   sfxDone();
   toast("Sumado: "+rt.name);
+  maybeMascotCheer();
   openDoMoreRoom();
   if(currentView==="hoy") renderHoy();
   updateHud();
@@ -2139,7 +2166,7 @@ function toggleDone(dateStr, memberIdx, taskKey){
 /* ======================= AUSENCIAS (vacaciones / trabajo fuera) ======================= */
 function isExcused(dateStr, memberIdx){
   const m = STATE.members[memberIdx];
-  if(m && m.isMascot) return true;
+  if(m && m.mascotType) return true;
   const mid = memberId(memberIdx);
   if(!Array.isArray(STATE.vacations)) STATE.vacations = [];
   return STATE.vacations.some(v => (v.memberId===mid || v.memberId==='all') && dateStr>=v.start && dateStr<=v.end);
@@ -2241,38 +2268,118 @@ function toast(msg, duration){
 
 /* ======================= HOY ======================= */
 let selMemberIdx = 0;
-function mascotMessagePool(dateStr){
-  const dow = strToDate(dateStr).getDay();
-  const byDow = {
-    1: ["Lunes. Yo tampoco tengo ganas, pero aquí estoy, mirando cómo curráis.", "Arranca la semana. Prometo animar desde el sofá sin moverme ni un centímetro."],
-    2: ["Martes, ni fu ni fa. Pero una casa limpia siempre sienta bien.", "Martes tranquilo. Aprovechad para esas tareas que vais dejando para luego."],
-    3: ["Mitad de semana. Vosotros a limpiar, yo a supervisar con cara seria.", "Miércoles: ya se nota el esfuerzo de estos días."],
-    4: ["Jueves. Ya se ve la luz al final del túnel. Seguid así.", "Un jueves más aguantando el tipo. Vais bien."],
-    5: ["¡Viernes! Un empujón más y luego todos a descansar, yo el primero.", "Viernes de cerrar la semana como se merece: con la casa en orden."],
-    6: ["Sábado. Día perfecto para una limpieza a fondo... o para verme dormir, que también es plan.", "Fin de semana, más tiempo, menos excusas."],
-    0: ["Domingo. Última oportunidad de la semana para dejarlo todo brillante.", "Domingo tranquilo, pero la casa no se cuida sola."]
-  };
-  const generic = [
-    "No puedo fregar ni un plato, pero aprecio cada esfuerzo.",
-    "Mi contribución oficial es esta: ánimo. De nada.",
-    "Si esto fuera una empresa, yo sería el de moral alta y cero productividad.",
-    "Sigo aquí, vigilando que nadie se escaquee.",
-    "Un poquito cada día, y la casa entera acaba brillando.",
-    "No tengo pulgares para ayudar, pero tengo mucha fe en vosotros.",
-    "Entre todos se limpia antes. Yo pongo la compañía."
-  ];
-  return (byDow[dow]||[]).concat(generic);
+let lastBacklogAlertMemberIdx = null;
+const MASCOT_SAD_MESSAGES = {
+  mascota: [
+    "¿Dónde andas? Llevo días vigilando lo de ayer y nada de nada...",
+    "Mis patitas ya no saben ni dónde pisar de tanto pendiente acumulado.",
+    "Os espero junto a la puerta desde ayer. Empiezo a preocuparme.",
+    "Un poco triste por aquí. Se quedó algo de ayer sin hacer, ¿no?",
+    "Ni un ladrido de ánimo me sale hoy. Hay atrasos por medio."
+  ],
+  peque: [
+    "¿Ya no vamos a jugar? Es que hay cosas de ayer sin terminar...",
+    "Estoy un poquito triste. ¿Te olvidaste de algo de ayer?",
+    "Mi peluche también está preocupado por lo de ayer, ¿eh?",
+    "Snif. Quedó algo pendiente de ayer y no me gusta nada.",
+    "¿Podemos terminar lo de ayer? Así ya no estoy triste."
+  ]
+};
+function launchMascotFX(mascotType){
+  const overlay = document.createElement('div');
+  overlay.className = 'mascot-fx-overlay';
+  document.body.appendChild(overlay);
+  const count = 16;
+  for(let i=0;i<count;i++){
+    const el = document.createElement('div');
+    const delay = (Math.random()*1.2).toFixed(2);
+    const duration = (2.4 + Math.random()*1.2).toFixed(2);
+    if(mascotType==='mascota'){
+      el.className = 'mascot-fx-paw';
+      el.style.left = (4+Math.random()*88)+'%';
+      el.style.setProperty('--rot', (Math.random()*40-20)+'deg');
+      el.style.animation = `pawRise ${duration}s ease-in ${delay}s forwards`;
+      el.innerHTML = pixelIcon('paw', 22);
+    } else {
+      el.className = 'mascot-fx-tear';
+      const angle = Math.random()*Math.PI - Math.PI/2; // hacia abajo, en abanico
+      const dist = 140 + Math.random()*300;
+      el.style.setProperty('--tx', (Math.sin(angle)*dist).toFixed(0)+'px');
+      el.style.setProperty('--ty', (Math.cos(angle)*dist).toFixed(0)+'px');
+      el.style.animation = `tearFall ${duration}s ease-out ${delay}s forwards`;
+      el.innerHTML = pixelIcon('droplet', 18);
+    }
+    overlay.appendChild(el);
+  }
+  setTimeout(()=>overlay.remove(), 4200);
 }
-function mascotMessageForToday(memberId, dateStr){
-  const pool = mascotMessagePool(dateStr);
-  let hash = 0;
-  const seed = memberId+dateStr;
-  for(let i=0;i<seed.length;i++){ hash = (hash*31 + seed.charCodeAt(i)) >>> 0; }
-  return pool[hash % pool.length];
+function mascotBacklogReactionHTML(mascot){
+  const msg = MASCOT_SAD_MESSAGES[mascot.mascotType][Math.floor(Math.random()*MASCOT_SAD_MESSAGES[mascot.mascotType].length)];
+  return `<div class="mascot-sad-box">${memberAvatarHTML(mascot, 34)}<div style="flex:1;"><strong style="font-size:11.5px;">${mascot.name}</strong><div class="muted" style="font-size:11px;font-style:italic;">"${msg}"</div></div></div>`;
+}
+const MASCOT_POOLS = {
+  mascota: {
+    byDow: {
+      1: ["Guau, lunes. Ánimo desde el sofá, que es donde mejor superviso.", "Miau. Detecto energía de limpieza en el ambiente. O eso creo."],
+      2: ["Martes de olfatear rincones. Todo bajo control por aquí.", "Ladro una vez en señal de aprobación por el martes que lleváis."],
+      3: ["Mitad de semana. Yo ya me he echado tres siestas de supervisión.", "Miércoles: mi cola se mueve sola, así que algo bien estáis haciendo."],
+      4: ["Jueves. Casi tanto aguante como el mío esperando la hora de comer.", "Un jueves más vigilando la puerta mientras currais."],
+      5: ["¡Viernes! Hasta yo estoy más animado de lo normal.", "Viernes con energía de perro recién paseado."],
+      6: ["Sábado, día perfecto para una siesta larga... digo, para limpiar a fondo.", "Fin de semana. Más tiempo para vosotros, más siesta para mí."],
+      0: ["Domingo tranquilo. Yo ya he hecho guardia toda la mañana.", "Último día de la semana. Ronroneo de ánimo para todos."]
+    },
+    generic: [
+      "Si tuviera pulgares, ya habría ayudado. Lo prometo.",
+      "Ladro en señal de aprobación.",
+      "Mi olfato dice que ya casi está.",
+      "Ronroneo de apoyo para quien esté limpiando ahora mismo.",
+      "Vigilo la puerta mientras vosotros curráis. Reparto justo, ¿no?",
+      "Desde aquí abajo se ve todo muy limpio. Casi.",
+      "Muevo el rabo en señal de que vais bien.",
+      "Mi contribución oficial es esta: ánimo. De nada."
+    ]
+  },
+  peque: {
+    byDow: {
+      1: ["¡Lunes! Yo ya ordené mis juguetes, ¿y tú?", "Empieza la semana. Mi peluche dice que tú puedes."],
+      2: ["Martes: si terminas pronto, ¿jugamos un rato?", "Hoy me he portado muy bien, así que tú también puedes."],
+      3: ["Mitad de semana ya. ¡Vamos que se puede!", "Miércoles de campeones. Bueno, de campeones de la limpieza."],
+      4: ["Jueves. Casi, casi es fin de semana.", "Un empujoncito más, ¡que ya casi llegamos al finde!"],
+      5: ["¡Viernes! Después de esto, ¿vemos una peli?", "Viernes de cerrar la semana como los campeones."],
+      6: ["Sábado: día de jugar Y de limpiar un poco. Se puede todo.", "Fin de semana. Mi peluche también quiere ayudar, pero no puede."],
+      0: ["Domingo. Última oportunidad de la semana, ¡tú puedes!", "Domingo tranquilo, pero yo creo en ti."]
+    },
+    generic: [
+      "¡Si terminas rápido jugamos!",
+      "Mi peluche dice que lo estás haciendo genial.",
+      "Cuando sea mayor también limpiaré todos los días. (Mentira, pero ánimo.)",
+      "¡Un poquito más y ya!",
+      "Yo ya recogí mis juguetes, ahora te toca a ti.",
+      "¡Lo estás haciendo genial, en serio!",
+      "Cuento hasta diez mientras terminas: uno, dos... ¡rápido!"
+    ]
+  }
+};
+function maybeMascotCheer(){
+  const mascots = STATE.members.filter(m=>m.mascotType);
+  if(!mascots.length) return;
+  if(Math.random() >= 0.2) return;
+  const mascot = mascots[Math.floor(Math.random()*mascots.length)];
+  const msg = randomMascotMessage(mascot.mascotType);
+  toast(mascot.name+": \""+msg+"\"");
+}
+function mascotMessagePool(mascotType, dateStr){
+  const pools = MASCOT_POOLS[mascotType] || MASCOT_POOLS.mascota;
+  const dow = strToDate(dateStr).getDay();
+  return (pools.byDow[dow]||[]).concat(pools.generic);
+}
+function randomMascotMessage(mascotType, dateStr){
+  const pool = mascotMessagePool(mascotType, dateStr||dateToStr(new Date()));
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 function mascotMessageCardHTML(memberIdx, dateStr){
   const m = STATE.members[memberIdx];
-  const msg = mascotMessageForToday(m.id, dateStr);
+  const msg = randomMascotMessage(m.mascotType, dateStr);
   return `<div class="card" style="text-align:center;padding:28px 18px;">
     <div style="margin-bottom:10px;display:flex;justify-content:center;">${memberAvatarHTML(m, 56)}</div>
     <h3 style="margin-bottom:6px;">${m.name}</h3>
@@ -2321,7 +2428,20 @@ function renderHoy(){
   const pctMin = Math.min(100, Math.round(s.minutesDone/goalMin*100));
   const pctMicro = Math.min(100, Math.round(s.microDone/goalMicro*100));
 
-  let html = `
+  const mascotsInHouse = STATE.members.filter(m=>m.mascotType);
+  let mascotSadHTML = "";
+  if(backlog.length && !STATE.members[selMemberIdx].mascotType && mascotsInHouse.length){
+    const mascot = mascotsInHouse[Math.floor(Math.random()*mascotsInHouse.length)];
+    mascotSadHTML = mascotBacklogReactionHTML(mascot);
+    if(lastBacklogAlertMemberIdx !== selMemberIdx){
+      lastBacklogAlertMemberIdx = selMemberIdx;
+      launchMascotFX(mascot.mascotType);
+    }
+  } else if(!backlog.length && lastBacklogAlertMemberIdx === selMemberIdx){
+    lastBacklogAlertMemberIdx = null;
+  }
+
+  let html = mascotSadHTML + `
     <div class="streak-box">
       <div class="streak-num">${streak}</div>
       <div><div style="font-weight:700;font-size:13px;">🔥 días de racha</div><div class="streak-lbl">${badgeCount} logros conseguidos</div></div>
@@ -2506,7 +2626,7 @@ function toggleDoneUI(dateStr, memberIdx, key){
     recordLifetimeCoverage(dateStr, memberIdx, key);
     save();
   }
-  if(wasDone) sfxUndo(); else sfxDone();
+  if(wasDone) sfxUndo(); else { sfxDone(); maybeMascotCheer(); }
   checkBadges(memberIdx);
   checkFamilyBadges();
   if(currentView==="hoy") renderHoy();
@@ -3029,10 +3149,16 @@ function addMember(){
   const name = input.value.trim();
   if(!name){ toast("Escribe un nombre"); return; }
   const isMascot = document.getElementById("newMemberIsMascot").checked;
-  STATE.members.push({ id:"m"+Date.now(), name, color: MEMBER_COLORS[STATE.members.length % MEMBER_COLORS.length], avatar: null, avatarFill: "transparent", isMascot });
+  const mascotType = isMascot ? document.getElementById("newMemberMascotType").value : "";
+  const newMember = { id:"m"+Date.now(), name, color: MEMBER_COLORS[STATE.members.length % MEMBER_COLORS.length], avatar: null, avatarFill: "transparent", mascotType };
+  STATE.members.push(newMember);
+  if(mascotType==='mascota'){
+    STATE.pets.push({ id:"pet"+Date.now(), name, type:"otro", linkedMemberId:newMember.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
+  }
   input.value="";
   document.getElementById("newMemberIsMascot").checked = false;
-  save(); renderFamilia(); updateHud(); toast(isMascot ? "Nuevo miembro cascarón en la casa" : "Nuevo recluta en la casa");
+  document.getElementById("newMemberMascotTypeRow").style.display = "none";
+  save(); renderFamilia(); updateHud(); toast(mascotType ? "Nuevo miembro cascarón en la casa" : "Nuevo recluta en la casa");
 }
 function removeMember(i){
   customConfirm("¿Quitar a esta persona? Se perderá su progreso y sus logros guardados.", ()=>{
@@ -3059,8 +3185,14 @@ function openEditMember(i){
       <input type="checkbox" id="editMemberFillTransparent" ${m.avatarFill==='filled'?'':'checked'} onchange="toggleMemberAvatarFill()"> Relleno transparente (solo el contorno)
     </label>
     <label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:12px;">
-      <input type="checkbox" id="editMemberIsMascot" ${m.isMascot?'checked':''} onchange="toggleMemberIsMascot()"> Es mascota o peque: no participa en el reparto, solo anima
+      <input type="checkbox" id="editMemberIsMascot" ${m.mascotType?'checked':''} onchange="toggleMemberIsMascot()"> Es mascota o peque: no participa en el reparto, solo anima
     </label>
+    <div id="editMemberMascotTypeRow" style="display:${m.mascotType?'block':'none'};margin-bottom:10px;">
+      <select id="editMemberMascotType" onchange="setMemberMascotType()">
+        <option value="mascota" ${m.mascotType==='mascota'?'selected':''}>Es una mascota</option>
+        <option value="peque" ${m.mascotType==='peque'?'selected':''}>Es un peque</option>
+      </select>
+    </div>
     <button class="btn block" onclick="confirmEditMember()">Guardar cambios</button>
   `;
   const colorsEl = document.getElementById("editMemberColors");
@@ -3086,10 +3218,26 @@ function toggleMemberAvatarFill(){
   renderFamilia();
 }
 function toggleMemberIsMascot(){
-  STATE.members[editMemberIdx].isMascot = document.getElementById("editMemberIsMascot").checked;
+  const checked = document.getElementById("editMemberIsMascot").checked;
+  document.getElementById("editMemberMascotTypeRow").style.display = checked ? "block" : "none";
+  STATE.members[editMemberIdx].mascotType = checked ? (document.getElementById("editMemberMascotType").value||"mascota") : "";
+  ensureMascotHasPetEntry(editMemberIdx);
   save();
   renderFamilia();
   updateHud();
+}
+function setMemberMascotType(){
+  STATE.members[editMemberIdx].mascotType = document.getElementById("editMemberMascotType").value;
+  ensureMascotHasPetEntry(editMemberIdx);
+  save();
+  renderFamilia();
+}
+function ensureMascotHasPetEntry(memberIdx){
+  const m = STATE.members[memberIdx];
+  if(m.mascotType!=='mascota') return;
+  const already = STATE.pets.some(p=>p.linkedMemberId===m.id);
+  if(already) return;
+  STATE.pets.push({ id:"pet"+Date.now(), name:m.name, type:"otro", linkedMemberId:m.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
 }
 function selectMemberAvatar(a){
   STATE.members[editMemberIdx].avatar = a;
