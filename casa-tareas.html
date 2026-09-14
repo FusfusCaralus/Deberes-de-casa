@@ -780,6 +780,7 @@ const LINE_ICONS = {
   sparkle: { p:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', c:'#D9B23D' },
   warning: { p:'<path d="M12 4l9 15H3z"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r="0.7" fill="currentColor" stroke="none"/>', c:'#C1544A' },
   droplet: { p:'<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>', c:'#4FA8D9' },
+  pill: { p:'<rect x="4" y="10.5" width="16" height="7" rx="3.5" transform="rotate(-35 12 14)"/><line x1="11" y1="8.5" x2="8.5" y2="11" transform="rotate(-35 12 14)"/>', c:'#C1544A' },
   snowflake:{ p:'<path d="M12 2v20M4 7l16 10M20 7L4 17"/>', c:'#7EC8E3' },
   flame:   { p:'<path d="M12 3c1 3-2 4.5-2 7.5a4 4 0 0 0 8 0c0-1.5-.5-2.5-1-3 0 2-1.5 3-2.5 2s-1-2 0-3.5c-1-1-2.5-1.8-2.5-3z"/>', c:'#E8703A' },
   trash:   { p:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>', c:'#8A8580' },
@@ -801,14 +802,14 @@ const LINE_ICONS = {
   scissors:{ p:'<circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M8 7l12 11M8 17L20 6"/>', c:'#9E9E9E' },
   sun:     { p:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>', c:'#E8B23D' },
   camera:  { p:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7l1.5-2h3L15 7"/><circle cx="12" cy="13.5" r="3.5"/>', c:'#8A8580' },
-  avatar1: { p:'<path d="M6 10 L7.5 5.5 L10 8.5"/><path d="M18 10 L16.5 5.5 L14 8.5"/><circle cx="12" cy="13" r="6.2"/><circle cx="9.7" cy="12.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="14.3" cy="12.5" r="0.9" fill="currentColor" stroke="none"/><path d="M11 15.2h2"/><path d="M4.5 13.5h2M17.5 13.5h2M4.8 15.5l2-0.7M19.2 15.5l-2-0.7"/>', c:'#C1544A' },
-  avatar2: { p:'<path d="M7 8.5c-2.2 0-3.2 2.7-2.2 6.2l2.7 1.8"/><path d="M17 8.5c2.2 0 3.2 2.7 2.2 6.2l-2.7 1.8"/><circle cx="12" cy="13" r="6.2"/><circle cx="9.7" cy="12.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="14.3" cy="12.5" r="0.9" fill="currentColor" stroke="none"/><ellipse cx="12" cy="14.7" rx="1.3" ry="0.9" fill="currentColor" stroke="none"/><path d="M11 16.3q1 1.4 2 0"/>', c:'#8E7BAE' },
-  avatar3: { p:'<circle cx="11" cy="12" r="5.5"/><path d="M16 11l4-1.3-2.2 3.3z"/><circle cx="13" cy="10.3" r="0.8" fill="currentColor" stroke="none"/><path d="M7 15.5c-1.5 1.5-3 1.8-4.5 1.3 1-1 1.5-2 1.6-3.3"/><path d="M8.5 17.2c1 1.2 2.5 1.6 4 1.3"/>', c:'#5B84B1' },
-  avatar4: { p:'<path d="M9 10c-1-3-0.5-6 0.5-6.8 1 1 1.5 3.7 1 6.3"/><path d="M15 10c1-3 0.5-6-0.5-6.8-1 1-1.5 3.7-1 6.3"/><circle cx="12" cy="14" r="6"/><circle cx="9.8" cy="13.3" r="0.9" fill="currentColor" stroke="none"/><circle cx="14.2" cy="13.3" r="0.9" fill="currentColor" stroke="none"/><path d="M11 16.2c0.7 0.6 1.3 0.6 2 0"/>', c:'#6B8E4E' },
-  avatar5: { p:'<path d="M6 6l2.5 5-4 0.5z"/><path d="M18 6l-2.5 5 4 0.5z"/><path d="M12 8l5 5.5c0.8 3-1.3 6-5 6s-5.8-3-5-6z"/><circle cx="10" cy="14" r="0.9" fill="currentColor" stroke="none"/><circle cx="14" cy="14" r="0.9" fill="currentColor" stroke="none"/><path d="M12 15.3l-1 1.3h2z" fill="currentColor" stroke="none"/>', c:'#D98E3D' },
-  avatar6: { p:'<circle cx="7.3" cy="7.3" r="2"/><circle cx="16.7" cy="7.3" r="2"/><circle cx="12" cy="13.5" r="6.3"/><circle cx="9.6" cy="12.7" r="0.9" fill="currentColor" stroke="none"/><circle cx="14.4" cy="12.7" r="0.9" fill="currentColor" stroke="none"/><ellipse cx="12" cy="15.3" rx="1.6" ry="1.2"/><path d="M12 16.5q1.2 1.2 2.3 0.2"/>', c:'#A9713F' },
-  avatar7: { p:'<path d="M8 5.5l1.8 2.2M16 5.5l-1.8 2.2"/><circle cx="12" cy="13" r="6.3"/><circle cx="9.3" cy="12.3" r="2.1"/><circle cx="14.7" cy="12.3" r="2.1"/><circle cx="9.3" cy="12.3" r="0.6" fill="currentColor" stroke="none"/><circle cx="14.7" cy="12.3" r="0.6" fill="currentColor" stroke="none"/><path d="M12 14.3l-1 1.5h2z" fill="currentColor" stroke="none"/>', c:'#5A7D9E' },
-  avatar8: { p:'<path d="M4 12c3-4.5 10-4.5 14-1.5l3-2.5-1 4 1 4-3-2.5c-4 3-11 3-14-1.5z"/><circle cx="14.5" cy="11" r="0.8" fill="currentColor" stroke="none"/><path d="M8 10.5c-1 0.7-1 2.3 0 3"/>', c:'#3E9B8F' },
+  avatar1: { p:'<circle cx="12" cy="12" r="4.2"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8L6.2 6.2"/>', c:'#D9A441' },
+  avatar2: { p:'<path d="M16.5 4.5a8 8 0 1 0 3 12.3A8.5 8.5 0 0 1 16.5 4.5z"/><circle cx="15.5" cy="9" r="0.6" fill="currentColor" stroke="none"/><circle cx="12.5" cy="13.5" r="0.4" fill="currentColor" stroke="none"/>', c:'#6C7AA6' },
+  avatar3: { p:'<path d="M12 4l2 5.5 5.5.5-4.2 3.8 1.3 5.4L12 16.3 7.4 19.2l1.3-5.4L4.5 10l5.5-.5z"/>', c:'#C9A227' },
+  avatar4: { p:'<circle cx="12" cy="12" r="2.1"/><path d="M12 9.5c-1.5-1.5-1.5-4 0-5.5 1.5 1.5 1.5 4 0 5.5zM12 14.5c1.5 1.5 1.5 4 0 5.5-1.5-1.5-1.5-4 0-5.5zM9.5 12c-1.5 1.5-4 1.5-5.5 0 1.5-1.5 4-1.5 5.5 0zM14.5 12c1.5-1.5 4-1.5 5.5 0-1.5 1.5-4 1.5-5.5 0z"/>', c:'#B15C77' },
+  avatar5: { p:'<path d="M3 18l6-9 3.5 4.5L15 10l6 8z"/><circle cx="17" cy="6.5" r="1.6"/>', c:'#5E7A63' },
+  avatar6: { p:'<path d="M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 19c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>', c:'#3E90A6' },
+  avatar7: { p:'<path d="M6 18c-1.5-6 2-12.5 12-13.5C19 14.5 12.5 18.5 6 18z"/><path d="M6.5 17.5L17 6.5"/>', c:'#5B8A4E' },
+  avatar8: { p:'<path d="M12 19s-7-4.5-9-9c-1.3-3 1-6 4-6 2 0 3.5 1.2 5 3 1.5-1.8 3-3 5-3 3 0 5.3 3 4 6-2 4.5-9 9-9 9z"/>', c:'#B1544E' },
   calendar:{ p:'<rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>', c:'#5B84B1' },
   list:    { p:'<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="0" fill="none"/>', c:'#A67C52' },
   chart:   { p:'<line x1="2" y1="20" x2="22" y2="20"/><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="6"/><line x1="18" y1="20" x2="18" y2="14"/>', c:'#4C8F6B' },
@@ -1395,6 +1396,16 @@ function petDailyTasks(dateStr, memberIdx){
     if(assigned !== memberIdx) return;
     tasks.push({icon:PET_TASK_ICONS.comida, tipo:"Mascota · comida y agua", title: p.name, min: p.comidaMin!=null?p.comidaMin:getOtherTime('petComida',5), key:"pet-"+p.id+"-comida"});
     if(p.type==="perro") tasks.push({icon:PET_TASK_ICONS.paseo, tipo:"Mascota · paseo", title: p.name, min: p.paseoMin!=null?p.paseoMin:getOtherTime('petPaseo',15), key:"pet-"+p.id+"-paseo"});
+    (p.medications||[]).forEach(med=>{
+      let due = false;
+      if(med.freqType==='diario' || med.freqType==='horas') due = true;
+      else if(med.freqType==='dias'){
+        const every = Math.max(1, med.freqValue||1);
+        const startDi = dayIndexFor(med.startDate||dateStr);
+        due = (((di-startDi) % every) + every) % every === 0;
+      }
+      if(due) tasks.push({icon:"pill", tipo:"Mascota · medicación", title: p.name+" — "+med.name+(med.freqType==='horas'?" ("+medFreqLabel(med)+")":""), min:1, key:"pet-"+p.id+"-med-"+med.id+"-"+dateStr});
+    });
   });
   return tasks;
 }
@@ -2397,8 +2408,14 @@ function renderHoy(){
     document.getElementById("hoyContent").innerHTML = emptyState("home","Aquí no vive nadie (todavía)","Añade a los sospechosos habituales en Ajustes → Familia. La casa no se limpia sola, por mucho que lo desees.");
     return;
   }
-  if(selMemberIdx>=STATE.members.length) selMemberIdx=0;
+  const contributors = STATE.members.filter(m=>!m.mascotType);
+  if(!contributors.length){
+    document.getElementById("hoyContent").innerHTML = emptyState("home","Solo hay cascarones por aquí","Añade a alguien que participe de verdad en Ajustes → Familia.");
+    return;
+  }
+  if(selMemberIdx>=STATE.members.length || STATE.members[selMemberIdx].mascotType) selMemberIdx = STATE.members.indexOf(contributors[0]);
   STATE.members.forEach((m,i)=>{
+    if(m.mascotType) return;
     const c = document.createElement("button");
     c.className = "member-chip"+(i===selMemberIdx?" sel":"");
     c.textContent = m.name;
@@ -2406,11 +2423,6 @@ function renderHoy(){
     wrap.appendChild(c);
   });
   checkPendingCongratsForMember(selMemberIdx);
-
-  if(STATE.members[selMemberIdx].isMascot){
-    document.getElementById("hoyContent").innerHTML = mascotMessageCardHTML(selMemberIdx, today);
-    return;
-  }
 
   if(isExcused(today, selMemberIdx)){
     document.getElementById("hoyContent").innerHTML = emptyState("suitcase","De vacaciones del polvo","Hoy no le toca nada. Disfruta la impunidad mientras dure.");
@@ -2681,6 +2693,7 @@ function weekDayBlockHTML(d){
   const isToday = ds===todayStr;
   const isPast = ds < todayStr;
   const membersHtml = STATE.members.map((m,mi)=>{
+    if(m.mascotType) return "";
     const excused = isExcused(ds, mi);
     if(excused){
       return `<div style="margin-bottom:6px;"><span class="pill" style="background:${m.color};">${m.name}</span> <span class="muted">${pixelIcon('suitcase',10)} de ausencia</span></div>`;
@@ -2829,6 +2842,7 @@ function renderMonthDetail(){
   if(!STATE.members.length){ html += emptyState("home","Día libre para todos","Sin familia añadida, técnicamente nadie tiene tareas. Disfrútalo mientras dure."); }
   else{
     STATE.members.forEach((m,mi)=>{
+      if(m.mascotType) return;
       const tasks = tasksForMemberOnDate(ds, mi);
       html += `<div style="margin-bottom:12px;"><div class="pill" style="background:${m.color}">${m.name}</div>`;
       html += '<div class="tasklist" style="margin-top:8px;">';
@@ -3106,7 +3120,7 @@ function renderFamilia(){
     const isMine = myUid && m.linkedUid === myUid;
     const linkedToOther = m.linkedUid && m.linkedUid !== myUid;
     let linkBtn = "";
-    if(myUid){
+    if(myUid && !m.mascotType){
       if(isMine){
         linkBtn = `<button class="btn small" style="background:var(--good);color:#fff;border:1px solid var(--good);" onclick="event.stopPropagation(); unclaimMemberProfile(${i})" title="Eres tú">👤 Tú</button>`;
       } else if(!m.linkedUid){
@@ -3117,7 +3131,7 @@ function renderFamilia(){
       ${memberAvatarHTML(m)}
       <div class="mname">${m.name}${linkedToOther?` <span class="muted" style="font-size:9.5px;font-weight:400;">· vinculado a otra cuenta</span>`:``}</div>
       ${linkBtn}
-      <button class="btn small" style="${hasPendingCongrats(m.id)?'background:var(--pine);color:#fff;border:1px solid var(--pine);':'background:none;color:var(--pine);border:1px solid var(--pine);'}" onclick="event.stopPropagation(); sendCongrats(${i})" title="Felicitar">🎉</button>
+      ${m.mascotType ? `` : `<button class="btn small" style="${hasPendingCongrats(m.id)?'background:var(--pine);color:#fff;border:1px solid var(--pine);':'background:none;color:var(--pine);border:1px solid var(--pine);'}" onclick="event.stopPropagation(); sendCongrats(${i})" title="Felicitar">🎉</button>`}
       <button class="btn small danger" onclick="event.stopPropagation(); removeMember(${i})">Quitar</button>
     </div>`;
   }).join("");
@@ -3153,7 +3167,7 @@ function addMember(){
   const newMember = { id:"m"+Date.now(), name, color: MEMBER_COLORS[STATE.members.length % MEMBER_COLORS.length], avatar: null, avatarFill: "transparent", mascotType };
   STATE.members.push(newMember);
   if(mascotType==='mascota'){
-    STATE.pets.push({ id:"pet"+Date.now(), name, type:"otro", linkedMemberId:newMember.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
+    STATE.pets.push({ id:"pet"+Date.now(), name, type:"perro", linkedMemberId:newMember.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
   }
   input.value="";
   document.getElementById("newMemberIsMascot").checked = false;
@@ -3199,11 +3213,11 @@ function openEditMember(i){
   colorsEl.innerHTML = MEMBER_COLORS.map(c=>`<div onclick="selectMemberColor('${c}')" data-color="${c}" style="width:30px;height:30px;border-radius:2px;background:${c};border:2px solid ${c===m.color?'var(--ink)':'var(--line-solid)'};box-shadow:${c===m.color?'0 0 0 2px var(--pine)':'none'};cursor:pointer;"></div>`).join("");
   const avatarsEl = document.getElementById("editMemberAvatars");
   const noneSel = !m.avatar;
-  let avHtml = `<div onclick="selectMemberAvatar(null)" data-av="none" style="width:30px;height:30px;flex:0 0 auto;border-radius:2px;background:${m.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;border:2px solid ${noneSel?'var(--pine)':'var(--line-solid)'};cursor:pointer;">${m.name[0].toUpperCase()}</div>`;
-  avHtml += AVATAR_LIST.map(a=>`<div onclick="selectMemberAvatar('${a}')" data-av="${a}" style="width:30px;height:30px;flex:0 0 auto;border-radius:2px;background:${m.color};display:flex;align-items:center;justify-content:center;border:2px solid ${m.avatar===a?'var(--pine)':'var(--line-solid)'};cursor:pointer;">${pixelIcon(a,20)}</div>`).join("");
+  let avHtml = `<div onclick="selectMemberAvatar(null)" data-av="none" style="width:34px;height:34px;flex:0 0 auto;border-radius:2px;background:${m.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;border:2px solid ${noneSel?'var(--pine)':'var(--line-solid)'};cursor:pointer;">${m.name[0].toUpperCase()}</div>`;
+  avHtml += AVATAR_LIST.map(a=>`<div onclick="selectMemberAvatar('${a}')" data-av="${a}" style="width:34px;height:34px;flex:0 0 auto;border-radius:2px;background:${m.color};display:flex;align-items:center;justify-content:center;border:2px solid ${m.avatar===a?'var(--pine)':'var(--line-solid)'};cursor:pointer;">${pixelIcon(a,23)}</div>`).join("");
   avatarsEl.innerHTML = avHtml;
   avatarsEl.style.flexWrap = "nowrap";
-  avatarsEl.style.gap = "4px";
+  avatarsEl.style.gap = "3px";
   avatarsEl.style.overflowX = "auto";
   openModal();
 }
@@ -3237,7 +3251,7 @@ function ensureMascotHasPetEntry(memberIdx){
   if(m.mascotType!=='mascota') return;
   const already = STATE.pets.some(p=>p.linkedMemberId===m.id);
   if(already) return;
-  STATE.pets.push({ id:"pet"+Date.now(), name:m.name, type:"otro", linkedMemberId:m.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
+  STATE.pets.push({ id:"pet"+Date.now(), name:m.name, type:"perro", linkedMemberId:m.id, comidaMin:getOtherTime('petComida',5), paseoMin:getOtherTime('petPaseo',15), areneroMin:getOtherTime('petArenero',10), cepilloMin:getOtherTime('petCepillo',10) });
 }
 function selectMemberAvatar(a){
   STATE.members[editMemberIdx].avatar = a;
@@ -3391,6 +3405,10 @@ function renderAnimales(){
     const paseo = p.paseoMin!=null?p.paseoMin:getOtherTime('petPaseo',15);
     const arenero = p.areneroMin!=null?p.areneroMin:getOtherTime('petArenero',10);
     const cepillo = p.cepilloMin!=null?p.cepilloMin:getOtherTime('petCepillo',10);
+    const extras = [];
+    if(p.weight!=null) extras.push(p.weight+' kg');
+    if(p.vetNextDate) extras.push('Veterinario: '+p.vetNextDate);
+    if((p.medications||[]).length) extras.push((p.medications.length===1?'1 medicación':p.medications.length+' medicaciones'));
     return `<div class="card" style="padding:9px;margin-bottom:7px;cursor:pointer;" onclick="openEditPet('${p.id}')">
       <div style="display:flex;gap:8px;align-items:flex-start;">
         <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:2px solid var(--line-solid);border-radius:2px;flex:0 0 auto;">${pixelIcon('paw',16)}</div>
@@ -3399,6 +3417,7 @@ function renderAnimales(){
           <div class="muted" style="font-size:10px;margin-top:2px;line-height:1.5;">
             Comida/agua: ${comida} min${p.type==='perro'?' · Paseo: '+paseo+' min':''}<br>
             Arenero/jaula: ${arenero} min · Cepillar: ${cepillo} min
+            ${extras.length?`<br>${extras.join(' · ')}`:``}
           </div>
         </div>
         <button onclick="event.stopPropagation(); removePet('${p.id}')">✕</button>
@@ -3406,8 +3425,23 @@ function renderAnimales(){
     </div>`;
   }).join("");
 }
+function medFreqLabel(med){
+  if(med.freqType==='horas') return 'cada '+med.freqValue+' horas';
+  if(med.freqType==='dias') return 'cada '+med.freqValue+' días';
+  return 'todos los días';
+}
 function petFormHTML(p){
   const isEdit = !!p;
+  const medsHTML = isEdit ? (p.medications||[]).map(med=>`
+    <div class="chore-row">
+      <div class="cname">${med.name} <span class="muted" style="font-size:9.5px;">(${medFreqLabel(med)})</span></div>
+      <button onclick="removePetMedication('${p.id}','${med.id}')">✕</button>
+    </div>`).join("") : "";
+  const vaxHTML = isEdit ? (p.vaccines||[]).map(v=>`
+    <div class="chore-row">
+      <div class="cname">${v.name} <span class="muted" style="font-size:9.5px;">${v.date}</span></div>
+      <button onclick="removePetVaccine('${p.id}','${v.id}')">✕</button>
+    </div>`).join("") : "";
   return `
     <button class="close-x" onclick="closeModal()">✕</button>
     <h3>${isEdit?'Editar animal':'Añadir animal'}</h3>
@@ -3423,6 +3457,38 @@ function petFormHTML(p){
     <div class="room-edit-row"><label>Paseo (min, solo perros)</label><input type="number" min="1" id="petPaseoMin" value="${p&&p.paseoMin!=null?p.paseoMin:getOtherTime('petPaseo',15)}"></div>
     <div class="room-edit-row"><label>Arenero/jaula (min, semanal)</label><input type="number" min="1" id="petAreneroMin" value="${p&&p.areneroMin!=null?p.areneroMin:getOtherTime('petArenero',10)}"></div>
     <div class="room-edit-row"><label>Cepillar (min, semanal)</label><input type="number" min="1" id="petCepilloMin" value="${p&&p.cepilloMin!=null?p.cepilloMin:getOtherTime('petCepillo',10)}"></div>
+
+    <div class="badge-group-title">Datos del animal</div>
+    <div class="field"><label>Fecha de nacimiento</label><input type="date" id="petBirthDate" value="${p&&p.birthDate?p.birthDate:''}"></div>
+    <div class="field"><label>Peso (kg)</label><input type="number" step="0.1" min="0" id="petWeight" value="${p&&p.weight!=null?p.weight:''}"></div>
+    <div class="field"><label>Marca de pienso</label><input type="text" id="petFoodBrand" placeholder="Ej: Royal Canin" value="${p&&p.foodBrand?p.foodBrand:''}"></div>
+    <div class="field"><label>Cantidad de pienso (g)</label><input type="number" min="0" id="petFoodAmount" value="${p&&p.foodAmount!=null?p.foodAmount:''}"></div>
+    <div class="field"><label>Próxima cita al veterinario</label><input type="date" id="petVetDate" value="${p&&p.vetNextDate?p.vetNextDate:''}"></div>
+    <div class="field"><label>Enlace al documento de identificación</label><input type="url" id="petIdDocLink" placeholder="https://..." value="${p&&p.idDocLink?p.idDocLink:''}"></div>
+    <div class="field"><label>O adjuntar documento (imagen o PDF, hasta 1,5 MB)</label><input type="file" id="petIdDocFile" accept="image/*,application/pdf"></div>
+    ${p&&p.idDocFile ? `<p class="muted" style="font-size:10.5px;">Ya tienes un documento adjunto. <a href="${p.idDocFile}" target="_blank" style="color:var(--pine);">Verlo</a> · <button onclick="event.preventDefault(); removePetIdDoc('${p.id}')" style="font-size:10px;">Quitar</button></p>` : ``}
+
+    ${isEdit ? `
+    <div class="badge-group-title">Medicación</div>
+    <div>${medsHTML || '<p class="muted" style="font-size:10.5px;">Sin recordatorios de medicación.</p>'}</div>
+    <div class="field" style="margin-top:6px;"><input type="text" id="newMedName" placeholder="Nombre del medicamento"></div>
+    <select id="newMedFreqType" style="margin-bottom:6px;width:100%;">
+      <option value="horas">Cada X horas</option>
+      <option value="diario">Todos los días</option>
+      <option value="dias">Cada X días</option>
+    </select>
+    <div class="field"><input type="number" min="1" id="newMedFreqValue" placeholder="Número (X), si aplica"></div>
+    <button class="btn secondary block" style="margin-bottom:10px;" onclick="addPetMedication('${p.id}')">+ Añadir medicación</button>
+
+    <div class="badge-group-title">Vacunas</div>
+    <div>${vaxHTML || '<p class="muted" style="font-size:10.5px;">Sin vacunas registradas.</p>'}</div>
+    <div class="row" style="margin-top:6px;margin-bottom:6px;">
+      <input type="text" id="newVaxName" placeholder="Ej: Rabia" style="flex:1;">
+      <input type="date" id="newVaxDate" style="width:140px;">
+    </div>
+    <button class="btn secondary block" style="margin-bottom:10px;" onclick="addPetVaccine('${p.id}')">+ Añadir vacuna</button>
+    ` : `<p class="muted" style="font-size:10.5px;margin:6px 0;">Guarda primero la ficha para poder añadir medicación y vacunas.</p>`}
+
     ${isEdit
       ? `<button class="btn block" onclick="confirmEditPet('${p.id}')">Guardar cambios</button>`
       : `<button class="btn block" onclick="confirmAddPet()">Añadir</button>`}
@@ -3438,29 +3504,106 @@ function openEditPet(id){
   document.getElementById("modalBody").innerHTML = petFormHTML(p);
   openModal();
 }
-function readPetForm(){
+function readPetFormBasics(){
   return {
     name: document.getElementById("petName").value.trim(),
     type: document.getElementById("petType").value,
     comidaMin: parseInt(document.getElementById("petComidaMin").value)||getOtherTime('petComida',5),
     paseoMin: parseInt(document.getElementById("petPaseoMin").value)||getOtherTime('petPaseo',15),
     areneroMin: parseInt(document.getElementById("petAreneroMin").value)||getOtherTime('petArenero',10),
-    cepilloMin: parseInt(document.getElementById("petCepilloMin").value)||getOtherTime('petCepillo',10)
+    cepilloMin: parseInt(document.getElementById("petCepilloMin").value)||getOtherTime('petCepillo',10),
+    birthDate: document.getElementById("petBirthDate").value || null,
+    weight: document.getElementById("petWeight").value ? parseFloat(document.getElementById("petWeight").value) : null,
+    foodBrand: document.getElementById("petFoodBrand").value.trim(),
+    foodAmount: document.getElementById("petFoodAmount").value ? parseInt(document.getElementById("petFoodAmount").value) : null,
+    vetNextDate: document.getElementById("petVetDate").value || null,
+    idDocLink: document.getElementById("petIdDocLink").value.trim()
   };
 }
+function readPetIdDocFile(){
+  const fileInput = document.getElementById("petIdDocFile");
+  const file = fileInput && fileInput.files[0];
+  if(!file) return Promise.resolve(null);
+  if(file.size > 1.5*1024*1024){
+    toast("Ese archivo pesa demasiado (máx. 1,5 MB)");
+    return Promise.resolve(undefined);
+  }
+  return new Promise(resolve=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = ()=>resolve(undefined);
+    reader.readAsDataURL(file);
+  });
+}
 function confirmAddPet(){
-  const data = readPetForm();
+  const data = readPetFormBasics();
   if(!data.name){ toast("Ponle un nombre a la mascota"); return; }
-  STATE.pets.push({ id:"pet"+Date.now(), ...data });
-  save(); closeModal(); renderAnimales(); toast("Fichaje confirmado");
+  readPetIdDocFile().then(fileData=>{
+    if(fileData===undefined) return;
+    const pet = { id:"pet"+Date.now(), ...data, medications:[], vaccines:[] };
+    if(fileData) pet.idDocFile = fileData;
+    STATE.pets.push(pet);
+    save(); closeModal(); renderAnimales(); toast("Fichaje confirmado");
+  });
 }
 function confirmEditPet(id){
   const p = STATE.pets.find(x=>x.id===id);
   if(!p) return;
-  const data = readPetForm();
+  const data = readPetFormBasics();
   if(!data.name){ toast("Ponle un nombre a la mascota"); return; }
-  Object.assign(p, data);
-  save(); closeModal(); renderAnimales(); toast("Mascota actualizada");
+  readPetIdDocFile().then(fileData=>{
+    if(fileData===undefined) return;
+    Object.assign(p, data);
+    if(fileData) p.idDocFile = fileData;
+    save(); closeModal(); renderAnimales(); toast("Mascota actualizada");
+  });
+}
+function removePetIdDoc(id){
+  const p = STATE.pets.find(x=>x.id===id);
+  if(!p) return;
+  delete p.idDocFile;
+  save();
+  openEditPet(id);
+}
+function addPetMedication(petId){
+  const p = STATE.pets.find(x=>x.id===petId);
+  if(!p) return;
+  const name = document.getElementById("newMedName").value.trim();
+  const freqType = document.getElementById("newMedFreqType").value;
+  const freqValue = parseInt(document.getElementById("newMedFreqValue").value) || 1;
+  if(!name){ toast("Ponle un nombre al medicamento"); return; }
+  if(!p.medications) p.medications = [];
+  p.medications.push({ id:"med"+Date.now(), name, freqType, freqValue, startDate: dateToStr(new Date()) });
+  save();
+  openEditPet(petId);
+  toast("Medicación añadida");
+}
+function removePetMedication(petId, medId){
+  const p = STATE.pets.find(x=>x.id===petId);
+  if(!p) return;
+  p.medications = (p.medications||[]).filter(m=>m.id!==medId);
+  save();
+  openEditPet(petId);
+}
+function addPetVaccine(petId){
+  const p = STATE.pets.find(x=>x.id===petId);
+  if(!p) return;
+  const name = document.getElementById("newVaxName").value.trim();
+  const date = document.getElementById("newVaxDate").value;
+  if(!name){ toast("Ponle un nombre a la vacuna"); return; }
+  if(!date){ toast("Ponle una fecha"); return; }
+  if(!p.vaccines) p.vaccines = [];
+  p.vaccines.push({ id:"vax"+Date.now(), name, date });
+  save();
+  openEditPet(petId);
+  toast("Vacuna registrada");
+}
+function removePetVaccine(petId, vaxId){
+  const p = STATE.pets.find(x=>x.id===petId);
+  if(!p) return;
+  p.vaccines = (p.vaccines||[]).filter(v=>v.id!==vaxId);
+  save();
+  openEditPet(petId);
 }
 function removePet(id){
   STATE.pets = STATE.pets.filter(p=>p.id!==id);
@@ -4274,8 +4417,9 @@ function removeVacation(id){
 function renderRankingList(){
   const el = document.getElementById("rankingList");
   if(!el) return;
-  if(!STATE.members.length){ el.innerHTML = emptyState("crown","Nadie compite todavía","Añade a la familia y que empiece la sana rivalidad doméstica."); return; }
-  const ranked = STATE.members.map((m,i)=>({m,i,score:memberTotalScore(i)})).sort((a,b)=>b.score-a.score);
+  const contributors = STATE.members.filter(m=>!m.mascotType);
+  if(!contributors.length){ el.innerHTML = emptyState("crown","Nadie compite todavía","Añade a la familia y que empiece la sana rivalidad doméstica."); return; }
+  const ranked = STATE.members.map((m,i)=>({m,i,score:memberTotalScore(i)})).filter(r=>!r.m.mascotType).sort((a,b)=>b.score-a.score);
   const medals = ["crown","medal","medal"];
   el.innerHTML = ranked.map((r,pos)=>`
     <div class="member-row">
@@ -4507,8 +4651,8 @@ function renderWeeklySummary(){
       s.tasks.forEach(t=>{ if(isDone(ds,mi,t.key)){ minutes += t.min; tasksDone++; } });
     });
     totalFamilyMinutes += minutes;
-    return { name:m.name, avatar:memberAvatarHTML(m), minutes, tasksDone };
-  });
+    return { name:m.name, avatar:memberAvatarHTML(m), minutes, tasksDone, isMascot: !!m.mascotType };
+  }).filter(p=>!p.isMascot);
   perMember.sort((a,b)=>b.minutes-a.minutes);
   const leader = perMember[0];
 
@@ -4660,8 +4804,9 @@ function monthlyMerit(memberIdx){
 function renderWallOfFame(){
   const el = document.getElementById("wallOfFame");
   if(!el) return;
-  if(!STATE.members.length){ el.innerHTML = emptyState("crown","El marco está vacío","Añade a la familia y que empiece la competición por el honor."); return; }
-  const ranked = STATE.members.map((m,i)=>({m,i,minutes:monthlyMerit(i)})).sort((a,b)=>b.minutes-a.minutes);
+  const contributors = STATE.members.filter(m=>!m.mascotType);
+  if(!contributors.length){ el.innerHTML = emptyState("crown","El marco está vacío","Añade a la familia y que empiece la competición por el honor."); return; }
+  const ranked = STATE.members.map((m,i)=>({m,i,minutes:monthlyMerit(i)})).filter(r=>!r.m.mascotType).sort((a,b)=>b.minutes-a.minutes);
   const winner = ranked[0];
   const monthName = MONTHS[new Date().getMonth()];
   if(!winner || winner.minutes<=0){
@@ -4730,16 +4875,25 @@ function renderLogros(){
     }).join("");
   }
 
-  if(selLogrosMemberIdx>=STATE.members.length) selLogrosMemberIdx = 0;
+  const logrosContributors = STATE.members.filter(m=>!m.mascotType);
+  if(selLogrosMemberIdx>=STATE.members.length || (STATE.members[selLogrosMemberIdx] && STATE.members[selLogrosMemberIdx].mascotType)){
+    selLogrosMemberIdx = logrosContributors.length ? STATE.members.indexOf(logrosContributors[0]) : 0;
+  }
   if(chipsEl){
     chipsEl.innerHTML = "";
     STATE.members.forEach((m,i)=>{
+      if(m.mascotType) return;
       const c = document.createElement("button");
       c.className = "member-chip"+(i===selLogrosMemberIdx?" sel":"");
       c.textContent = m.name;
       c.onclick = ()=>{ selLogrosMemberIdx=i; renderLogros(); };
       chipsEl.appendChild(c);
     });
+  }
+  if(!logrosContributors.length){
+    if(el) el.innerHTML = emptyState("family","Solo hay cascarones por aquí","Añade a alguien que participe de verdad.");
+    renderFamilyShop(); renderRewardCatalogAdmin();
+    return;
   }
 
   const mi = selLogrosMemberIdx;
