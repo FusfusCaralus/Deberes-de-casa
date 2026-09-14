@@ -1844,7 +1844,6 @@ function doExtraChore(choreId){
   updateHud();
 }
 function openDoMoreRoom(){
-  const today = dateToStr(new Date());
   const body = document.getElementById("modalBody");
   const anyRoom = STATE.house.some(f=>f.rooms.length);
   if(!anyRoom){
@@ -1852,44 +1851,69 @@ function openDoMoreRoom(){
     openModal();
     return;
   }
+  let html = `<button class="close-x" onclick="closeModal()">✕</button><h3>Otra estancia de la casa</h3><p class="muted">Elige primero la planta.</p>`;
+  STATE.house.forEach(floor=>{
+    if(!floor.rooms.length) return;
+    html += `<button class="btn secondary block" style="margin-top:8px;" onclick="openDoMoreRoomFloor('${floor.id}')">${floor.name} <span class="muted">(${floor.rooms.length} estancia${floor.rooms.length===1?'':'s'})</span></button>`;
+  });
+  body.innerHTML = html;
+  openModal();
+}
+function openDoMoreRoomFloor(floorId){
+  const floor = STATE.house.find(f=>f.id===floorId);
+  if(!floor) return;
+  const body = document.getElementById("modalBody");
+  let html = `<button class="close-x" onclick="closeModal()">✕</button>
+    <button class="btn small secondary" onclick="openDoMoreRoom()">‹ Plantas</button>
+    <h3 style="margin-top:8px;">${floor.name}</h3>
+    <p class="muted">Ahora elige la estancia.</p>`;
+  floor.rooms.forEach(room=>{
+    const hasAny = STATE.roomTasks.length || (room.cristales||[]).length || (room.puertas||[]).length || (room.muebles||[]).length;
+    html += `<button class="btn secondary block" style="margin-top:8px;${hasAny?'':'opacity:.5;'}" ${hasAny?`onclick="openDoMoreRoomDetail('${floor.id}','${room.id}')"`:'disabled'}>${room.name}</button>`;
+  });
+  body.innerHTML = html;
+  openModal();
+}
+function openDoMoreRoomDetail(floorId, roomId){
+  const today = dateToStr(new Date());
+  const floor = STATE.house.find(f=>f.id===floorId);
+  const room = floor && floor.rooms.find(r=>r.id===roomId);
+  if(!room) return;
+  const body = document.getElementById("modalBody");
   const row = (icon, label, min, done, onclick) => `<div class="task ${done?'done':''}" ${done?'':`onclick="${onclick}"`} style="padding:5px 2px;${done?'opacity:.5;':''}cursor:${done?'default':'pointer'};">
     <div class="check" style="${done?'background:var(--good);border-color:var(--line-solid);color:#fff;':''}">${done?'✓':''}</div>
     <div class="ticon">${pixelIcon(icon,14)}</div>
     <div class="tinfo"><div class="ttitle">${label}</div></div>
     <div class="ttime">${min} min</div>
   </div>`;
-  let html = `<button class="close-x" onclick="closeModal()">✕</button><h3>Otra estancia de la casa</h3><p class="muted">Elige estancia y qué haces — cristales, puertas, muebles o las tareas generales — y suma sus minutos a tu cuenta.</p>`;
-  STATE.house.forEach(floor=>{
-    floor.rooms.forEach(room=>{
-      const hasAny = STATE.roomTasks.length || (room.cristales||[]).length || (room.puertas||[]).length || (room.muebles||[]).length;
-      if(!hasAny) return;
-      html += `<div class="section-title" style="margin-top:8px;">${room.name} (${floor.name})</div>`;
-      STATE.roomTasks.forEach(rt=>{
-        const key = "extravol-room-"+room.id+"-"+rt.id+"-"+today;
-        const done = isDone(today, selMemberIdx, key);
-        html += row(rt.icon||'sparkle', rt.name, rt.min, done, `doExtraRoomTask('${room.id}','${rt.id}')`);
-      });
-      (room.cristales||[]).forEach(item=>{
-        const key = "extravol-cristal-"+item.id+"-"+today;
-        const done = isDone(today, selMemberIdx, key);
-        html += row('window', item.name, item.min, done, `doExtraSpecificItem('cristal','${item.id}',${item.min})`);
-      });
-      (room.puertas||[]).forEach(item=>{
-        const key = "extravol-puerta-"+item.id+"-"+today;
-        const done = isDone(today, selMemberIdx, key);
-        html += row('door', item.name, item.min, done, `doExtraSpecificItem('puerta','${item.id}',${item.min})`);
-      });
-      (room.muebles||[]).forEach(item=>{
-        const key = "extravol-mueble-"+item.id+"-"+today;
-        const done = isDone(today, selMemberIdx, key);
-        html += row('chair', item.name, item.min, done, `doExtraSpecificItem('mueble','${item.id}',${item.min})`);
-      });
-    });
+  let html = `<button class="close-x" onclick="closeModal()">✕</button>
+    <button class="btn small secondary" onclick="openDoMoreRoomFloor('${floor.id}')">‹ ${floor.name}</button>
+    <h3 style="margin-top:8px;">${room.name}</h3>
+    <p class="muted">Elige qué haces — cristales, puertas, muebles o las tareas generales — y suma sus minutos a tu cuenta.</p>`;
+  STATE.roomTasks.forEach(rt=>{
+    const key = "extravol-room-"+room.id+"-"+rt.id+"-"+today;
+    const done = isDone(today, selMemberIdx, key);
+    html += row(rt.icon||'sparkle', rt.name, rt.min, done, `doExtraRoomTask('${room.id}','${rt.id}','${floor.id}')`);
+  });
+  (room.cristales||[]).forEach(item=>{
+    const key = "extravol-cristal-"+item.id+"-"+today;
+    const done = isDone(today, selMemberIdx, key);
+    html += row('window', item.name, item.min, done, `doExtraSpecificItem('cristal','${item.id}',${item.min},'${floor.id}','${room.id}')`);
+  });
+  (room.puertas||[]).forEach(item=>{
+    const key = "extravol-puerta-"+item.id+"-"+today;
+    const done = isDone(today, selMemberIdx, key);
+    html += row('door', item.name, item.min, done, `doExtraSpecificItem('puerta','${item.id}',${item.min},'${floor.id}','${room.id}')`);
+  });
+  (room.muebles||[]).forEach(item=>{
+    const key = "extravol-mueble-"+item.id+"-"+today;
+    const done = isDone(today, selMemberIdx, key);
+    html += row('chair', item.name, item.min, done, `doExtraSpecificItem('mueble','${item.id}',${item.min},'${floor.id}','${room.id}')`);
   });
   body.innerHTML = html;
   openModal();
 }
-function doExtraSpecificItem(type, itemId, min){
+function doExtraSpecificItem(type, itemId, min, floorId, roomId){
   const today = dateToStr(new Date());
   const key = "extravol-"+type+"-"+itemId+"-"+today;
   if(isDone(today, selMemberIdx, key)) return;
@@ -1900,11 +1924,11 @@ function doExtraSpecificItem(type, itemId, min){
   sfxDone();
   toast("Sumado");
   maybeMascotCheer();
-  openDoMoreRoom();
+  if(floorId && roomId) openDoMoreRoomDetail(floorId, roomId); else openDoMoreRoom();
   if(currentView==="hoy") renderHoy();
   updateHud();
 }
-function doExtraRoomTask(roomId, rtId){
+function doExtraRoomTask(roomId, rtId, floorId){
   const today = dateToStr(new Date());
   const rt = STATE.roomTasks.find(x=>x.id===rtId);
   if(!rt) return;
@@ -1917,7 +1941,7 @@ function doExtraRoomTask(roomId, rtId){
   sfxDone();
   toast("Sumado: "+rt.name);
   maybeMascotCheer();
-  openDoMoreRoom();
+  if(floorId) openDoMoreRoomDetail(floorId, roomId); else openDoMoreRoom();
   if(currentView==="hoy") renderHoy();
   updateHud();
 }
