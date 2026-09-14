@@ -302,7 +302,7 @@ input,select{font-family:inherit;font-size:15px;}
 </div>
 
 <div class="topnav">
-  <div class="brand"><span><span id="brandIcon" style="vertical-align:middle;"></span> Deberes de casa</span><span class="hud-score pixel" id="hudScore"></span></div>
+  <div class="brand"><span><span id="brandIcon" style="vertical-align:middle;"></span> <span id="brandName">Deberes de casa</span></span><span class="hud-score pixel" id="hudScore"></span></div>
   <div class="tabs" id="mainMenu"></div>
   <div class="tabs sub" id="subMenu" style="margin-top:6px;"></div>
 </div>
@@ -688,6 +688,11 @@ input,select{font-family:inherit;font-size:15px;}
         <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"> Activar modo oscuro
       </label>
     </div>
+    <div class="card">
+      <h2>Nombre de la casa</h2>
+      <p class="muted">Aparece arriba del todo en vez de "Deberes de casa". Déjalo en blanco para volver al nombre por defecto.</p>
+      <input type="text" id="houseNameInput" placeholder="Ej: Casa de los García" oninput="updateHouseName()">
+    </div>
   </div>
 
   <!-- OTRAS TAREAS -->
@@ -1051,6 +1056,12 @@ function applyBgTheme(themeId){
   r.setProperty('--line', t.line);
   r.setProperty('--line-solid', t.lineSolid);
 }
+function applyHouseName(){
+  const name = (STATE.houseName||"").trim() || "Deberes de casa";
+  const brandEl = document.getElementById("brandName");
+  if(brandEl) brandEl.textContent = name;
+  document.title = name;
+}
 function applyDarkMode(on){
   const r = document.documentElement.style;
   if(on){
@@ -1073,6 +1084,7 @@ function applyDarkMode(on){
     r.setProperty('--danger', '#B5524A');
     applyBgTheme(STATE.bgTheme);
   if(STATE.darkMode) applyDarkMode(true);
+  applyHouseName();
     applyTheme(STATE.theme);
   }
 }
@@ -1154,7 +1166,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "" };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1178,6 +1190,7 @@ if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(STATE.darkMode===undefined) STATE.darkMode = false;
+if(STATE.houseName===undefined) STATE.houseName = "";
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
 if(!STATE.householdDone) STATE.householdDone = {};
@@ -1395,14 +1408,20 @@ function petDailyTasks(dateStr, memberIdx){
     const assigned = (di+pi) % nMembers;
     if(assigned !== memberIdx) return;
     (p.medications||[]).forEach(med=>{
-      let due = false;
-      if(med.freqType==='diario' || med.freqType==='horas') due = true;
-      else if(med.freqType==='dias'){
-        const every = Math.max(1, med.freqValue||1);
-        const startDi = dayIndexFor(med.startDate||dateStr);
-        due = (((di-startDi) % every) + every) % every === 0;
+      if(med.startDate && dateStr < med.startDate) return;
+      if(med.freqType==='mensual'){
+        if(strToDate(dateStr).getDate() === med.dayOfMonth){
+          tasks.push({icon:"pill", tipo:"Mascota · medicación", title: p.name+" — "+med.name, min:1, key:"pet-"+p.id+"-med-"+med.id+"-"+dateStr});
+        }
+      } else if(med.freqType==='semanal'){
+        if(strToDate(dateStr).getDay() === med.dayOfWeek){
+          tasks.push({icon:"pill", tipo:"Mascota · medicación", title: p.name+" — "+med.name, min:1, key:"pet-"+p.id+"-med-"+med.id+"-"+dateStr});
+        }
+      } else if(med.freqType==='diario'){
+        (med.times||[]).forEach(t=>{
+          tasks.push({icon:"pill", tipo:"Mascota · medicación", title: p.name+" — "+med.name+" ("+t+")", min:1, key:"pet-"+p.id+"-med-"+med.id+"-"+t+"-"+dateStr});
+        });
       }
-      if(due) tasks.push({icon:"pill", tipo:"Mascota · medicación", title: p.name+" — "+med.name+(med.freqType==='horas'?" ("+medFreqLabel(med)+")":""), min:1, key:"pet-"+p.id+"-med-"+med.id+"-"+dateStr});
     });
   });
   return tasks;
@@ -2652,7 +2671,7 @@ function printCuadrante(){
   const days = [...Array(7)].map((_,i)=>{ const d=new Date(base); d.setDate(base.getDate()+i); return d; });
   const label = `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} – ${days[6].getDate()} ${MONTHS[days[6].getMonth()]} ${days[6].getFullYear()}`;
 
-  let html = `<h1 style="font-family:-apple-system,sans-serif;margin-bottom:2px;">Deberes de casa</h1>
+  let html = `<h1 style="font-family:-apple-system,sans-serif;margin-bottom:2px;">${(STATE.houseName||"").trim() || "Deberes de casa"}</h1>
     <p style="font-family:-apple-system,sans-serif;color:#555;margin-top:0;margin-bottom:16px;">Semana del ${label}</p>
     <table style="width:100%;border-collapse:collapse;font-family:-apple-system,sans-serif;font-size:12px;">
       <thead><tr>
@@ -3289,15 +3308,7 @@ function plantFormHTML(p){
     <div class="field"><label>Regar cada cuántos días</label><input type="number" min="1" id="plantFreq" value="${p?p.freq:3}"></div>
     <div class="field"><label>Minutos que lleva regarla</label><input type="number" min="1" id="plantRiegoMin" value="${p&&p.riegoMin!=null?p.riegoMin:getOtherTime('plantRiego',3)}"></div>
     <div class="field"><label>Cómo se riega</label>
-      <select id="plantMetodoRiego" onchange="document.getElementById('plantMetodoRiegoCustom').style.display = this.value==='__custom__'?'block':'none';">
-        <option value="" ${p&&!p.metodoRiego?'selected':''}>Sin especificar</option>
-        <option value="Por arriba, dejando escurrir el exceso" ${p&&p.metodoRiego==='Por arriba, dejando escurrir el exceso'?'selected':''}>Por arriba, dejando escurrir el exceso</option>
-        <option value="Por sumersión (unos minutos y escurrir bien)" ${p&&p.metodoRiego==='Por sumersión (unos minutos y escurrir bien)'?'selected':''}>Por sumersión</option>
-        <option value="Manteniendo la tierra siempre algo húmeda" ${p&&p.metodoRiego==='Manteniendo la tierra siempre algo húmeda'?'selected':''}>Manteniendo la tierra siempre húmeda</option>
-        <option value="Dejar secar la tierra del todo entre riegos" ${p&&p.metodoRiego==='Dejar secar la tierra del todo entre riegos'?'selected':''}>Dejar secar del todo entre riegos</option>
-        <option value="__custom__" ${p&&p.metodoRiego&&!['','Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'].includes(p.metodoRiego)?'selected':''}>Otro (lo escribo yo)</option>
-      </select>
-      <input type="text" id="plantMetodoRiegoCustom" placeholder="Describe cómo se riega" style="margin-top:6px;display:${p&&p.metodoRiego&&!['','Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'].includes(p.metodoRiego)?'block':'none'};" value="${p&&p.metodoRiego&&!['','Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'].includes(p.metodoRiego)?p.metodoRiego:''}">
+      <textarea id="plantMetodoRiego" rows="4" placeholder="Ej: regarla completamente, dejar escurrir bien antes de ponerla en el platillo, con piedras debajo..." style="width:100%;font-family:inherit;font-size:13px;padding:8px;border-radius:5px;border:1px solid var(--line-solid);background:var(--card);color:var(--ink);resize:vertical;">${p&&p.metodoRiego?p.metodoRiego:''}</textarea>
     </div>
     <div class="field"><label>Interior o exterior</label>
       <select id="plantUbicacion">
@@ -3334,14 +3345,12 @@ function openEditPlant(id){
   openModal();
 }
 function readPlantForm(){
-  const metodoSel = document.getElementById("plantMetodoRiego").value;
-  const metodoRiego = metodoSel==='__custom__' ? document.getElementById("plantMetodoRiegoCustom").value.trim() : metodoSel;
   return {
     name: document.getElementById("plantName").value.trim(),
     location: document.getElementById("plantLoc").value.trim(),
     freq: parseInt(document.getElementById("plantFreq").value)||3,
     riegoMin: parseInt(document.getElementById("plantRiegoMin").value)||getOtherTime('plantRiego',3),
-    metodoRiego: metodoRiego,
+    metodoRiego: document.getElementById("plantMetodoRiego").value.trim(),
     ubicacion: document.getElementById("plantUbicacion").value,
     abono: document.getElementById("plantAbono").value.trim(),
     poda: document.getElementById("plantPoda").value.trim(),
@@ -3368,18 +3377,7 @@ function autofillPlantCare(){
     document.getElementById("plantAbono").value = care.abono;
     document.getElementById("plantPoda").value = care.poda;
     document.getElementById("plantExtra").value = care.extra;
-    const metodoSel = document.getElementById("plantMetodoRiego");
-    const knownOptions = ['Por arriba, dejando escurrir el exceso','Por sumersión (unos minutos y escurrir bien)','Manteniendo la tierra siempre algo húmeda','Dejar secar la tierra del todo entre riegos'];
-    if(care.riego){
-      if(knownOptions.includes(care.riego)){
-        metodoSel.value = care.riego;
-        document.getElementById("plantMetodoRiegoCustom").style.display = "none";
-      } else {
-        metodoSel.value = "__custom__";
-        document.getElementById("plantMetodoRiegoCustom").value = care.riego;
-        document.getElementById("plantMetodoRiegoCustom").style.display = "block";
-      }
-    }
+    if(care.riego) document.getElementById("plantMetodoRiego").value = care.riego;
     hint.textContent = "✓ Ficha de cuidados reconocida y rellenada, incluido cómo regarla. Puedes editarla si quieres.";
     hint.style.color = "var(--good)";
   } else {
@@ -3433,10 +3431,63 @@ function renderAnimales(){
     </div>`;
   }).join("");
 }
+const DOW_FULL = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 function medFreqLabel(med){
-  if(med.freqType==='horas') return 'cada '+med.freqValue+' horas';
-  if(med.freqType==='dias') return 'cada '+med.freqValue+' días';
-  return 'todos los días';
+  if(med.freqType==='mensual') return 'el día '+med.dayOfMonth+' de cada mes';
+  if(med.freqType==='semanal') return 'los '+DOW_FULL[med.dayOfWeek].toLowerCase()+', cada semana';
+  if(med.freqType==='diario') return 'todos los días a las '+(med.times||[]).join(', ');
+  return '';
+}
+let pendingMedDayOfMonth = 1;
+let pendingMedDayOfWeek = 1;
+let pendingMedTimes = [];
+function updateMedFreqUI(){
+  const type = document.getElementById("newMedFreqType").value;
+  document.getElementById("newMedMonthlyPicker").style.display = type==='mensual' ? 'block' : 'none';
+  document.getElementById("newMedWeeklyPicker").style.display = type==='semanal' ? 'block' : 'none';
+  document.getElementById("newMedDailyPicker").style.display = type==='diario' ? 'block' : 'none';
+  if(type==='mensual') renderMedDayOfMonthGrid();
+  if(type==='semanal') renderMedDayOfWeekChips();
+}
+function renderMedDayOfMonthGrid(){
+  const el = document.getElementById("medDayOfMonthGrid");
+  if(!el) return;
+  let html = "";
+  for(let d=1; d<=31; d++){
+    html += `<div class="month-cell ${d===pendingMedDayOfMonth?'today':''}" style="cursor:pointer;" onclick="selectMedDayOfMonth(${d})">${d}</div>`;
+  }
+  el.innerHTML = html;
+}
+function selectMedDayOfMonth(d){
+  pendingMedDayOfMonth = d;
+  renderMedDayOfMonthGrid();
+}
+function renderMedDayOfWeekChips(){
+  const el = document.getElementById("medDayOfWeekChips");
+  if(!el) return;
+  const order = [1,2,3,4,5,6,0]; // lunes a domingo
+  el.innerHTML = order.map(dow=>`<button class="member-chip${dow===pendingMedDayOfWeek?' sel':''}" onclick="selectMedDayOfWeek(${dow})">${DOW_FULL[dow].slice(0,3)}</button>`).join("");
+}
+function selectMedDayOfWeek(dow){
+  pendingMedDayOfWeek = dow;
+  renderMedDayOfWeekChips();
+}
+function renderMedTimesList(){
+  const el = document.getElementById("medTimesList");
+  if(!el) return;
+  if(!pendingMedTimes.length){ el.innerHTML = '<p class="muted" style="font-size:10.5px;">Todavía no has añadido ninguna hora.</p>'; return; }
+  el.innerHTML = pendingMedTimes.map((t,i)=>`<span class="pill" style="margin:2px 4px 2px 0;display:inline-block;">${t} <span onclick="removeMedTimeSlot(${i})" style="cursor:pointer;font-weight:800;">✕</span></span>`).join("");
+}
+function addMedTimeSlot(){
+  const val = document.getElementById("newMedTimeInput").value;
+  if(!val){ toast("Elige una hora primero"); return; }
+  if(!pendingMedTimes.includes(val)) pendingMedTimes.push(val);
+  pendingMedTimes.sort();
+  renderMedTimesList();
+}
+function removeMedTimeSlot(i){
+  pendingMedTimes.splice(i,1);
+  renderMedTimesList();
 }
 function petFormHTML(p){
   const isEdit = !!p;
@@ -3474,14 +3525,31 @@ function petFormHTML(p){
     <div class="badge-group-title">Medicación</div>
     <div>${medsHTML || '<p class="muted" style="font-size:10.5px;">Sin recordatorios de medicación.</p>'}</div>
     <div class="field" style="margin-top:6px;"><input type="text" id="newMedName" placeholder="Nombre del medicamento"></div>
-    <select id="newMedFreqType" style="margin-bottom:6px;width:100%;" onchange="document.getElementById('newMedFreqValueRow').style.display=this.value==='dias'?'block':(this.value==='horas'?'block':'none');">
-      <option value="horas">Cada X horas</option>
-      <option value="diario">Todos los días</option>
-      <option value="dias">Cada X días</option>
-    </select>
-    <div class="field" id="newMedFreqValueRow"><input type="number" min="1" id="newMedFreqValue" placeholder="Número (X)"></div>
-    <div class="field"><label style="font-size:11px;">Fecha de inicio (elígela en el calendario)</label><input type="date" id="newMedStartDate" value="${dateToStr(new Date())}"></div>
-    <button class="btn secondary block" style="margin-bottom:10px;" onclick="addPetMedication('${p.id}')">+ Añadir medicación</button>
+    <div class="field"><label style="font-size:11px;">Frecuencia</label>
+      <select id="newMedFreqType" onchange="updateMedFreqUI()">
+        <option value="mensual">Un día fijo cada mes</option>
+        <option value="semanal">Un día fijo cada semana</option>
+        <option value="diario">Todos los días</option>
+      </select>
+    </div>
+    <div id="newMedMonthlyPicker">
+      <label class="muted" style="font-size:11px;">Elige el día del mes, tocándolo</label>
+      <div class="month-grid" id="medDayOfMonthGrid" style="margin-top:4px;"></div>
+    </div>
+    <div id="newMedWeeklyPicker" style="display:none;">
+      <label class="muted" style="font-size:11px;">Elige el día de la semana, tocándolo</label>
+      <div class="member-chip-row" id="medDayOfWeekChips" style="margin-top:4px;"></div>
+    </div>
+    <div id="newMedDailyPicker" style="display:none;">
+      <label class="muted" style="font-size:11px;">Horarios de la toma (añade uno o varios)</label>
+      <div id="medTimesList" style="margin:4px 0;"></div>
+      <div class="row">
+        <input type="time" id="newMedTimeInput" style="flex:1;">
+        <button class="btn small secondary" onclick="addMedTimeSlot()">+ Añadir hora</button>
+      </div>
+    </div>
+    <div class="field" style="margin-top:8px;"><label style="font-size:11px;">Fecha de inicio</label><input type="date" id="newMedStartDate" value="${dateToStr(new Date())}"></div>
+    <button class="btn secondary block" style="margin-top:6px;margin-bottom:10px;" onclick="addPetMedication('${p.id}')">+ Añadir medicación</button>
 
     <div class="badge-group-title">Vacunas</div>
     <div>${vaxHTML || '<p class="muted" style="font-size:10.5px;">Sin vacunas registradas.</p>'}</div>
@@ -3505,6 +3573,11 @@ function openEditPet(id){
   const p = STATE.pets.find(x=>x.id===id);
   if(!p) return;
   document.getElementById("modalBody").innerHTML = petFormHTML(p);
+  pendingMedDayOfMonth = 1;
+  pendingMedDayOfWeek = 1;
+  pendingMedTimes = [];
+  renderMedDayOfMonthGrid();
+  renderMedTimesList();
   openModal();
 }
 function readPetFormBasics(){
@@ -3568,11 +3641,19 @@ function addPetMedication(petId){
   if(!p) return;
   const name = document.getElementById("newMedName").value.trim();
   const freqType = document.getElementById("newMedFreqType").value;
-  const freqValue = parseInt(document.getElementById("newMedFreqValue").value) || 1;
   const startDate = document.getElementById("newMedStartDate").value || dateToStr(new Date());
   if(!name){ toast("Ponle un nombre al medicamento"); return; }
+  const med = { id:"med"+Date.now(), name, freqType, startDate };
+  if(freqType==='mensual'){
+    med.dayOfMonth = pendingMedDayOfMonth;
+  } else if(freqType==='semanal'){
+    med.dayOfWeek = pendingMedDayOfWeek;
+  } else if(freqType==='diario'){
+    if(!pendingMedTimes.length){ toast("Añade al menos una hora"); return; }
+    med.times = [...pendingMedTimes];
+  }
   if(!p.medications) p.medications = [];
-  p.medications.push({ id:"med"+Date.now(), name, freqType, freqValue, startDate });
+  p.medications.push(med);
   save();
   openEditPet(petId);
   toast("Medicación añadida");
@@ -4063,10 +4144,17 @@ function renderApariencia(){
   }).join("");
   const darkToggle = document.getElementById("darkModeToggle");
   if(darkToggle) darkToggle.checked = !!STATE.darkMode;
+  const nameInput = document.getElementById("houseNameInput");
+  if(nameInput && document.activeElement!==nameInput) nameInput.value = STATE.houseName||"";
 }
 function toggleDarkMode(){
   STATE.darkMode = document.getElementById("darkModeToggle").checked;
   applyDarkMode(STATE.darkMode);
+  save();
+}
+function updateHouseName(){
+  STATE.houseName = document.getElementById("houseNameInput").value;
+  applyHouseName();
   save();
 }
 function chooseTheme(id){
@@ -4263,6 +4351,7 @@ if(!STATE.familyPrizes) STATE.familyPrizes = [];
 if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(STATE.darkMode===undefined) STATE.darkMode = false;
+if(STATE.houseName===undefined) STATE.houseName = "";
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
 if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
@@ -4273,6 +4362,7 @@ if(!STATE.bgTheme || !BG_THEMES[STATE.bgTheme]) STATE.bgTheme = "marfil";
       applyTheme(STATE.theme);
       applyBgTheme(STATE.bgTheme);
   if(STATE.darkMode) applyDarkMode(true);
+  applyHouseName();
       toast("Configuración importada");
       setView(currentView);
     }catch(err){
@@ -5307,6 +5397,7 @@ function bootApp(){
   applyTheme(STATE.theme);
   applyBgTheme(STATE.bgTheme);
   if(STATE.darkMode) applyDarkMode(true);
+  applyHouseName();
   setView("hoy");
 }
 initFirebase();
