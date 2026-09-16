@@ -367,6 +367,11 @@ input,select{font-family:inherit;font-size:15px;}
       <div id="rankingList"></div>
     </div>
     <div class="card">
+      <h2>⚡ Limpieza exprés</h2>
+      <p class="muted">¿Vienen visitas o tienes poco tiempo? Dinos cuánto tienes y te decimos qué priorizar para que la casa quede presentable, sin perder tiempo en lo que menos se nota.</p>
+      <button class="btn block" onclick="openExpressClean()">Programar limpieza rápida</button>
+    </div>
+    <div class="card">
       <h2>Resumen de la semana</h2>
       <p class="muted">Cómo va la semana en curso, para toda la familia.</p>
       <div id="weeklySummary"></div>
@@ -1726,6 +1731,122 @@ function helpWithTask(ownerMemberIdx, key){
   openHelpHouseModal();
   if(currentView==="hoy") renderHoy();
   updateHud();
+}
+const EXPRESS_CLEAN_VISIBLE_ROOMS = ["salón","salon","cocina","entrada","recibidor","pasillo","baño","bano","aseo","porche","terraza","comedor","rellano"];
+const EXPRESS_CLEAN_LOW_PRIORITY_ROOMS = ["garaje","trastero","sótano","sotano","despacho","office","desván","desvan"];
+function expressRoomTier(roomName){
+  const name = roomName.toLowerCase();
+  if(EXPRESS_CLEAN_VISIBLE_ROOMS.some(k=>name.includes(k))) return 1;
+  if(EXPRESS_CLEAN_LOW_PRIORITY_ROOMS.some(k=>name.includes(k))) return 3;
+  return 2;
+}
+const EXPRESS_CLEAN_TASKTYPE_PRIORITY = { "orden":1, "barrer":2, "cristal":3, "puerta":3, "mueble":4, "paredes":5 };
+function buildExpressCleanCandidates(){
+  const today = dateToStr(new Date());
+  const candidates = [];
+  STATE.house.forEach(floor=>{
+    floor.rooms.forEach(room=>{
+      const tier = expressRoomTier(room.name);
+      STATE.roomTasks.forEach(rt=>{
+        const key = "extravol-room-"+room.id+"-"+rt.id+"-"+today;
+        if(isDone(today, selMemberIdx, key)) return;
+        candidates.push({ tier, typePriority: EXPRESS_CLEAN_TASKTYPE_PRIORITY[rt.id]!=null?EXPRESS_CLEAN_TASKTYPE_PRIORITY[rt.id]:4, min: rt.min, label: rt.name+" — "+room.name+" ("+floor.name+")", action: `expressMarkRoomTask('${room.id}','${rt.id}')` });
+      });
+      (room.cristales||[]).forEach(item=>{
+        const key = "extravol-cristal-"+item.id+"-"+today;
+        if(isDone(today, selMemberIdx, key)) return;
+        candidates.push({ tier, typePriority: EXPRESS_CLEAN_TASKTYPE_PRIORITY.cristal, min:item.min, label:"Cristal: "+item.name+" — "+room.name+" ("+floor.name+")", action:`expressMarkSpecificItem('cristal','${item.id}',${item.min})` });
+      });
+      (room.puertas||[]).forEach(item=>{
+        const key = "extravol-puerta-"+item.id+"-"+today;
+        if(isDone(today, selMemberIdx, key)) return;
+        candidates.push({ tier, typePriority: EXPRESS_CLEAN_TASKTYPE_PRIORITY.puerta, min:item.min, label:"Puerta: "+item.name+" — "+room.name+" ("+floor.name+")", action:`expressMarkSpecificItem('puerta','${item.id}',${item.min})` });
+      });
+      (room.muebles||[]).forEach(item=>{
+        const key = "extravol-mueble-"+item.id+"-"+today;
+        if(isDone(today, selMemberIdx, key)) return;
+        candidates.push({ tier, typePriority: EXPRESS_CLEAN_TASKTYPE_PRIORITY.mueble, min:item.min, label:"Mueble: "+item.name+" — "+room.name+" ("+floor.name+")", action:`expressMarkSpecificItem('mueble','${item.id}',${item.min})` });
+      });
+    });
+  });
+  candidates.sort((a,b)=> a.tier-b.tier || a.typePriority-b.typePriority || a.min-b.min);
+  return candidates;
+}
+function expressMarkRoomTask(roomId, rtId){
+  const today = dateToStr(new Date());
+  const rt = STATE.roomTasks.find(x=>x.id===rtId);
+  if(!rt) return;
+  const key = "extravol-room-"+roomId+"-"+rtId+"-"+today;
+  if(isDone(today, selMemberIdx, key)) return;
+  toggleDone(today, selMemberIdx, key);
+  const lc = ensureLifetimeCoverageShape();
+  lc.roomtask[rtId+"|"+roomId] = true;
+  updateStats(selMemberIdx, {min:rt.min, key:"roomtask-"+rtId}, 1);
+  sfxDone();
+  maybeMascotCheer();
+  if(currentView==="hoy") renderHoy();
+  updateHud();
+  refreshExpressCleanList();
+}
+function expressMarkSpecificItem(type, itemId, min){
+  const today = dateToStr(new Date());
+  const key = "extravol-"+type+"-"+itemId+"-"+today;
+  if(isDone(today, selMemberIdx, key)) return;
+  toggleDone(today, selMemberIdx, key);
+  const lc = ensureLifetimeCoverageShape();
+  lc[type][itemId] = true;
+  updateStats(selMemberIdx, {min:min, key:type}, 1);
+  sfxDone();
+  maybeMascotCheer();
+  if(currentView==="hoy") renderHoy();
+  updateHud();
+  refreshExpressCleanList();
+}
+function openExpressClean(){
+  const body = document.getElementById("modalBody");
+  body.innerHTML = `
+    <button class="close-x" onclick="closeModal()">✕</button>
+    <h3>Limpieza exprés</h3>
+    <p class="muted">¿Cuánto tiempo tienes? Priorizamos lo que más se nota primero (orden y estancias de paso, antes que cristales o paredes).</p>
+    <div class="field"><label>Minutos disponibles</label><input type="number" min="5" id="expressCleanMinutes" placeholder="Ej: 30" value="30"></div>
+    <button class="btn block" onclick="generateExpressCleanList()">Generar lista</button>
+  `;
+  openModal();
+}
+function generateExpressCleanList(){
+  const input = document.getElementById("expressCleanMinutes");
+  const minutesAvailable = parseInt(input.value) || 0;
+  if(minutesAvailable<=0){ toast("Dime cuántos minutos tienes"); return; }
+  window._lastExpressCleanMinutes = minutesAvailable;
+  refreshExpressCleanList();
+}
+function refreshExpressCleanList(){
+  const minutesAvailable = window._lastExpressCleanMinutes || 30;
+  const candidates = buildExpressCleanCandidates();
+  let used = 0;
+  const selected = [];
+  candidates.forEach(c=>{
+    if(used + c.min <= minutesAvailable){
+      selected.push(c);
+      used += c.min;
+    }
+  });
+  const body = document.getElementById("modalBody");
+  if(!selected.length){
+    body.innerHTML = `<button class="close-x" onclick="closeModal()">✕</button><h3>Limpieza exprés</h3><p class="muted">Con ${minutesAvailable} minutos no da ni para una tarea rápida, o ya está todo lo importante cubierto por hoy. ¡Bien!</p>`;
+    openModal();
+    return;
+  }
+  let html = `<button class="close-x" onclick="closeModal()">✕</button><h3>Limpieza exprés — ${used}/${minutesAvailable} min</h3><p class="muted">Empieza por arriba: es lo que más se nota. Ve marcando según lo hagas.</p>`;
+  selected.forEach(c=>{
+    html += `<div class="task" onclick="${c.action}" style="padding:5px 2px;cursor:pointer;">
+      <div class="check"></div>
+      <div class="tinfo"><div class="ttitle">${c.label}</div></div>
+      <div class="ttime">${c.min} min</div>
+    </div>`;
+  });
+  body.innerHTML = html;
+  openModal();
 }
 function openDoMoreModal(){
   const body = document.getElementById("modalBody");
