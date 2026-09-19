@@ -1190,7 +1190,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0, helpLog: [] };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0, helpLog: [], assignedSnapshots: {} };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1209,6 +1209,7 @@ if(!STATE.epoch) STATE.epoch = dateToStr(new Date());
 if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
 if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
+if(!STATE.assignedSnapshots) STATE.assignedSnapshots = {};
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
@@ -1332,8 +1333,14 @@ function resetAll(){
   });
 }
 function actualizarReparto(){
-  customConfirm("¿Actualizar el reparto? Lo que ya está marcado como hecho se queda exactamente igual, no se toca. A partir de hoy, el reparto de estancias, cristales, puertas, muebles y microtareas se recalcula con la casa tal y como la tienes ahora mismo, pasando por todo una vez antes de repetir nada.", ()=>{
+  customConfirm("¿Actualizar el reparto? Lo que ya está marcado como hecho se queda exactamente igual, no se toca — lo que hiciste ayer sigue siendo lo que hiciste ayer, no cambia. A partir de hoy, el reparto de estancias, cristales, puertas, muebles y microtareas se recalcula con la casa tal y como la tienes ahora mismo, pasando por todo una vez antes de repetir nada.", ()=>{
     STATE.repartoBaseDi = dayIndexFor(dateToStr(new Date()));
+    // Los días ya pasados quedan fijados tal y como se vieron (no se tocan). Solo se borra
+    // la "foto" de hoy en adelante, para que se recalcule con la casa que tienes ahora.
+    const todayStr = dateToStr(new Date());
+    if(STATE.assignedSnapshots){
+      Object.keys(STATE.assignedSnapshots).forEach(ds=>{ if(ds >= todayStr) delete STATE.assignedSnapshots[ds]; });
+    }
     save();
     closeModal();
     renderAll();
@@ -1346,6 +1353,7 @@ function resetTaskRotation(){
     STATE.done = {};
     STATE.householdDone = {};
     STATE.taskTransfers = [];
+    STATE.assignedSnapshots = {};
     STATE.epoch = dateToStr(new Date());
     save();
     closeModal();
@@ -1410,6 +1418,38 @@ function weekIndexFor(dateStr){ return Math.floor(dayIndexFor(dateStr)/7); }
 // (que sigue haciendo falta intacto para rachas, ausencias y semanas de colada/tareas extra).
 function repartoDi(dateStr){ return dayIndexFor(dateStr) - (STATE.repartoBaseDi||0); }
 
+// ======= FOTO FIJA DEL REPARTO DE CADA DÍA =======
+// Antes, qué cristal/puerta/mueble/estancia le tocaba a cada uno un día concreto se calculaba
+// "al vuelo" cada vez, a partir del reparto y la casa actuales. Eso tiene un problema: si luego
+// cambias la casa (añades/quitas algo) o simplemente pasa el tiempo, ese cálculo puede dar un
+// resultado distinto para el MISMO día ya pasado — y entonces lo que ves marcado como hecho
+// parece corresponder a otra tarea distinta a la que de verdad hiciste.
+// Para evitarlo, la primera vez que se calcula el reparto de un día para alguien, se guarda
+// ("se fija") en STATE.assignedSnapshots. Las veces siguientes se lee esa foto fija en vez de
+// recalcular, así que un día ya visto no cambia aunque la casa cambie después. "Actualizar
+// reparto" borra las fotos de hoy en adelante para que se recalculen con la casa tal cual está.
+function ensureAssignedSnapshots(){
+  if(!STATE.assignedSnapshots) STATE.assignedSnapshots = {};
+  return STATE.assignedSnapshots;
+}
+function getDaySnapshot(dateStr, memberIdx){
+  const snaps = ensureAssignedSnapshots();
+  const day = snaps[dateStr];
+  if(!day) return null;
+  return day[memberId(memberIdx)] || null;
+}
+let assignedSnapshotSaveTimer = null;
+function saveDaySnapshot(dateStr, memberIdx, patch){
+  const snaps = ensureAssignedSnapshots();
+  if(!snaps[dateStr]) snaps[dateStr] = {};
+  const mid = memberId(memberIdx);
+  snaps[dateStr][mid] = {...(snaps[dateStr][mid]||{}), ...patch};
+  // Un mismo render puede fijar varias cosas seguidas (estancia, cristal, puerta, mueble...);
+  // agrupamos esos guardados en uno solo en vez de grabar en cada uno por separado.
+  clearTimeout(assignedSnapshotSaveTimer);
+  assignedSnapshotSaveTimer = setTimeout(save, 60);
+}
+
 // Reparto por turnos que cambia de patrón cada vez que se completa una vuelta entera a la lista,
 // para que un ciclo nuevo no reparta exactamente lo mismo que el anterior.
 function rotIndex(di, memberIdx, nMembers, length){
@@ -1440,11 +1480,19 @@ function memberZoneRoomIndex(di, memberIdx, nMembers, totalRooms){
   return zoneStart + (dayInCycle % zoneLen);
 }
 function assignedZoneRoom(dateStr, memberIdx){
-  const di = repartoDi(dateStr);
   const rooms = flatten('rooms');
+  const snap = getDaySnapshot(dateStr, memberIdx);
+  if(snap && snap.roomId){
+    const pinned = rooms.find(r=>r.roomId===snap.roomId);
+    if(pinned) return pinned;
+    // la estancia fijada ese día ya no existe (se borró): se recalcula y se vuelve a fijar abajo
+  }
+  const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const idx = memberZoneRoomIndex(di, memberIdx, nMembers, rooms.length);
-  return idx>=0 ? rooms[idx] : null;
+  const room = idx>=0 ? rooms[idx] : null;
+  if(room) saveDaySnapshot(dateStr, memberIdx, {roomId: room.roomId});
+  return room;
 }
 // Busca el elemento (cristal/puerta/mueble) de esa estancia; si no tiene, expande la
 // búsqueda a las estancias más próximas en el recorrido de la casa.
@@ -1464,17 +1512,29 @@ function nearestItemForRoom(items, targetRoomId, roomsOrdered, di){
   }
   return items[((di % items.length) + items.length) % items.length];
 }
+const SNAPSHOT_FIELD_FOR_TYPE = {cristales:'cristalId', puertas:'puertaId', muebles:'muebleId'};
 function assignedItemOfType(type, dateStr, memberIdx){
   const list = flatten(type);
   if(!list.length) return null;
+  const field = SNAPSHOT_FIELD_FOR_TYPE[type];
+  const snap = getDaySnapshot(dateStr, memberIdx);
+  if(field && snap && snap[field]){
+    const pinned = list.find(it=>it.itemId===snap[field]);
+    if(pinned) return pinned;
+    // el elemento fijado ese día ya no existe (se borró): se recalcula y se vuelve a fijar abajo
+  }
   const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const targetRoom = assignedZoneRoom(dateStr, memberIdx);
+  let chosen;
   if(targetRoom){
     const rooms = flatten('rooms');
-    return nearestItemForRoom(list, targetRoom.roomId, rooms, di);
+    chosen = nearestItemForRoom(list, targetRoom.roomId, rooms, di);
+  } else {
+    chosen = list[rotIndex(di,memberIdx,nMembers,list.length)];
   }
-  return list[rotIndex(di,memberIdx,nMembers,list.length)];
+  if(chosen && field) saveDaySnapshot(dateStr, memberIdx, {[field]: chosen.itemId});
+  return chosen;
 }
 function dailyTasksForMember(dateStr, memberIdx){
   const cristales = flatten('cristales');
@@ -1673,20 +1733,39 @@ function dailyMicrotareas(dateStr, memberIdx){
   const take = Math.min(isDayAfterWork(dateStr, memberIdx) ? 1 : 2, n);
   const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
-  const dayStart = ((di % n) + n) % n;
-  const memberStart = (dayStart + memberIdx*take) % n;
-  const featured = [];
-  for(let i=0;i<take;i++) featured.push(list[(memberStart+i)%n]);
-  return featured.map(mt=>{
+  const snap = getDaySnapshot(dateStr, memberIdx);
+  let featured = null;
+  if(snap && Array.isArray(snap.microDiariaIds) && snap.microDiariaIds.length){
+    featured = snap.microDiariaIds.map(id=>list.find(m=>m.id===id)).filter(Boolean);
+    if(!featured.length) featured = null; // se borraron todas: se recalcula abajo
+  }
+  if(!featured){
+    const dayStart = ((di % n) + n) % n;
+    const memberStart = (dayStart + memberIdx*take) % n;
+    featured = [];
+    for(let i=0;i<take;i++) featured.push(list[(memberStart+i)%n]);
+    saveDaySnapshot(dateStr, memberIdx, {microDiariaIds: featured.map(m=>m.id)});
+  }
+  const bathroomPins = (snap && snap.microDiariaBathroomRoomId) || {};
+  const newBathroomPins = {};
+  const result = featured.map(mt=>{
     if(mt.rotateBathrooms){
       const bathrooms = allBathrooms();
       if(!bathrooms.length) return null;
-      const idx = (((di*nMembers+memberIdx) % bathrooms.length) + bathrooms.length) % bathrooms.length;
-      const b = bathrooms[idx];
+      let b = bathrooms.find(x=>x.room.id===bathroomPins[mt.id]) || null;
+      if(!b){
+        const idx = (((di*nMembers+memberIdx) % bathrooms.length) + bathrooms.length) % bathrooms.length;
+        b = bathrooms[idx];
+      }
+      newBathroomPins[mt.id] = b.room.id;
       return {icon:"sparkle", tipo:"Microtarea diaria", title: mt.name+" — "+b.room.name+" ("+b.floor.name+")", min:0, key:"microd-"+mt.id, isMicro:true};
     }
     return {icon:"sparkle", tipo:"Microtarea diaria", title: mt.name, min:0, key:"microd-"+mt.id, isMicro:true};
   }).filter(Boolean);
+  if(Object.keys(newBathroomPins).length){
+    saveDaySnapshot(dateStr, memberIdx, {microDiariaBathroomRoomId: {...bathroomPins, ...newBathroomPins}});
+  }
+  return result;
 }
 function todaysMicrotareas(dateStr, memberIdx){
   const n = STATE.microtareas.length;
@@ -1694,9 +1773,15 @@ function todaysMicrotareas(dateStr, memberIdx){
   const take = Math.min(isDayAfterWork(dateStr, memberIdx) ? 1 : 2, n);
   const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
+  const snap = getDaySnapshot(dateStr, memberIdx);
+  if(snap && Array.isArray(snap.microIds) && snap.microIds.length){
+    const featured = snap.microIds.map(id=>STATE.microtareas.find(m=>m.id===id)).filter(Boolean);
+    if(featured.length) return featured;
+  }
   const offset = ((di*nMembers + memberIdx) % n + n) % n;
   const featured = [];
   for(let i=0;i<take;i++) featured.push(STATE.microtareas[(offset+i)%n]);
+  saveDaySnapshot(dateStr, memberIdx, {microIds: featured.map(m=>m.id)});
   return featured;
 }
 function microtareasForMember(dateStr, memberIdx){
@@ -4885,6 +4970,7 @@ if(!STATE.microtareasDiarias) STATE.microtareasDiarias = DEFAULT_MICROTAREAS_DIA
       if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
 if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
+if(!STATE.assignedSnapshots) STATE.assignedSnapshots = {};
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
