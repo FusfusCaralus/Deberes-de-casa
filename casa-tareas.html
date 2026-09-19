@@ -732,6 +732,11 @@ input,select{font-family:inherit;font-size:15px;}
       </label>
     </div>
     <div class="card">
+      <h2>Actualizar reparto</h2>
+      <p class="muted">Para cuando cambias algo de la casa — añades o quitas una estancia, un cristal, una puerta, un mueble o una microtarea — y quieres que se note ya en lo que queda por hacer. Lo marcado como hecho se queda tal cual, tal y como está: no se borra ni se desmarca nada. Solo hace que, desde hoy, el reparto pase por todo lo que tiene la casa ahora mismo antes de repetir nada.</p>
+      <button class="btn secondary block" onclick="actualizarReparto()">Actualizar reparto</button>
+    </div>
+    <div class="card">
       <h2>Reiniciar reparto de tareas</h2>
       <p class="muted">Para cuando volvéis de unos días fuera y no os apetece encontraros la casa llena de tareas atrasadas. Borra el historial de tareas marcadas y empieza la rotación de cero desde hoy — la casa, la familia, los puntos, las rachas y los logros ya conseguidos no se tocan.</p>
       <button class="btn danger block" onclick="resetTaskRotation()">Reiniciar reparto</button>
@@ -1184,7 +1189,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [] };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0 };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1209,6 +1214,7 @@ if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(STATE.darkMode===undefined) STATE.darkMode = false;
 if(STATE.houseName===undefined) STATE.houseName = "";
+if(STATE.repartoBaseDi===undefined) STATE.repartoBaseDi = 0;
 if(!Array.isArray(STATE.improvements)) STATE.improvements = [];
 if(!STATE.prizes) STATE.prizes = {};
 if(!STATE.taskOverrides) STATE.taskOverrides = {};
@@ -1323,6 +1329,16 @@ function resetAll(){
     toast("Aplicación reiniciada");
   });
 }
+function actualizarReparto(){
+  customConfirm("¿Actualizar el reparto? Lo que ya está marcado como hecho se queda exactamente igual, no se toca. A partir de hoy, el reparto de estancias, cristales, puertas, muebles y microtareas se recalcula con la casa tal y como la tienes ahora mismo, pasando por todo una vez antes de repetir nada.", ()=>{
+    STATE.repartoBaseDi = dayIndexFor(dateToStr(new Date()));
+    save();
+    closeModal();
+    renderAll();
+    updateHud();
+    toast("Reparto actualizado con la casa que tienes ahora.");
+  });
+}
 function resetTaskRotation(){
   customConfirm("¿Reiniciar el reparto de tareas? Se borra qué se marcó como hecho y la rotación empieza de cero desde hoy, como si la casa estuviera recién estrenada. La casa, la familia, los puntos, las rachas, los logros y lo que ya tengas cubierto en la cuenta atrás de la casa completa no se tocan.", ()=>{
     STATE.done = {};
@@ -1387,6 +1403,10 @@ function flatten(type){
 /* ======================= GENERACIÓN DE TAREAS DEL DÍA ======================= */
 function dayIndexFor(dateStr){ return daysBetween(strToDate(STATE.epoch), strToDate(dateStr)); }
 function weekIndexFor(dateStr){ return Math.floor(dayIndexFor(dateStr)/7); }
+// "Día" usado solo para repartir estancias/cristales/puertas/muebles/microtareas: igual que
+// dayIndexFor, pero se puede recolocar con "Actualizar reparto" sin tocar el epoch real
+// (que sigue haciendo falta intacto para rachas, ausencias y semanas de colada/tareas extra).
+function repartoDi(dateStr){ return dayIndexFor(dateStr) - (STATE.repartoBaseDi||0); }
 
 // Reparto por turnos que cambia de patrón cada vez que se completa una vuelta entera a la lista,
 // para que un ciclo nuevo no reparta exactamente lo mismo que el anterior.
@@ -1418,7 +1438,7 @@ function memberZoneRoomIndex(di, memberIdx, nMembers, totalRooms){
   return zoneStart + (dayInCycle % zoneLen);
 }
 function assignedZoneRoom(dateStr, memberIdx){
-  const di = dayIndexFor(dateStr);
+  const di = repartoDi(dateStr);
   const rooms = flatten('rooms');
   const nMembers = Math.max(STATE.members.length,1);
   const idx = memberZoneRoomIndex(di, memberIdx, nMembers, rooms.length);
@@ -1445,7 +1465,7 @@ function nearestItemForRoom(items, targetRoomId, roomsOrdered, di){
 function assignedItemOfType(type, dateStr, memberIdx){
   const list = flatten(type);
   if(!list.length) return null;
-  const di = dayIndexFor(dateStr);
+  const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const targetRoom = assignedZoneRoom(dateStr, memberIdx);
   if(targetRoom){
@@ -1649,7 +1669,7 @@ function dailyMicrotareas(dateStr, memberIdx){
   const n = list.length;
   if(!n) return [];
   const take = Math.min(isDayAfterWork(dateStr, memberIdx) ? 1 : 2, n);
-  const di = dayIndexFor(dateStr);
+  const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const dayStart = ((di % n) + n) % n;
   const memberStart = (dayStart + memberIdx*take) % n;
@@ -1670,7 +1690,7 @@ function todaysMicrotareas(dateStr, memberIdx){
   const n = STATE.microtareas.length;
   if(!n) return [];
   const take = Math.min(isDayAfterWork(dateStr, memberIdx) ? 1 : 2, n);
-  const di = dayIndexFor(dateStr);
+  const di = repartoDi(dateStr);
   const nMembers = Math.max(STATE.members.length,1);
   const offset = ((di*nMembers + memberIdx) % n + n) % n;
   const featured = [];
@@ -1688,6 +1708,7 @@ function openHelpHouseModal(){
   let anyTask = false;
   STATE.members.forEach((m,mi)=>{
     if(mi===selMemberIdx) return;
+    if(m.mascotType) return; // mascotas y peques no participan en la limpieza, no se les puede "ayudar"
     const excused = isExcused(today, mi);
     const tasks = dailyTasksForMember(today, mi).concat(microtareasForMember(today, mi));
     const pending = tasks.filter(t=>!isDone(today, mi, t.key));
@@ -4815,6 +4836,7 @@ if(STATE.familyPointsSpent===undefined) STATE.familyPointsSpent = 0;
 if(STATE.laundryStatus===undefined) STATE.laundryStatus = null;
 if(STATE.darkMode===undefined) STATE.darkMode = false;
 if(STATE.houseName===undefined) STATE.houseName = "";
+if(STATE.repartoBaseDi===undefined) STATE.repartoBaseDi = 0;
 if(!Array.isArray(STATE.improvements)) STATE.improvements = [];
       if(!STATE.shopCategories) STATE.shopCategories = [...SHOP_CATEGORY_ORDER_DEFAULT];
       if(!STATE.theme || !THEMES[STATE.theme]) STATE.theme = "tinta";
