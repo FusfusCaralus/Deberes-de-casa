@@ -1412,7 +1412,22 @@ function flatten(type){
 
 /* ======================= GENERACIÓN DE TAREAS DEL DÍA ======================= */
 function dayIndexFor(dateStr){ return daysBetween(strToDate(STATE.epoch), strToDate(dateStr)); }
-function weekIndexFor(dateStr){ return Math.floor(dayIndexFor(dateStr)/7); }
+// Las "semanas" van siempre de lunes a domingo del calendario real (no en bloques de 7 días
+// desde el día en que se creó la app). Si no fuera así, y el epoch no cayera en lunes, "hoy"
+// y "el lunes de esta semana" podían caer en semanas-epoch distintas, y entonces salían
+// tareas semanales distintas (sábanas/toallas, tarea de la semana...) en Hoy y en Semana
+// para lo que, en el calendario real, es la misma semana.
+function epochWeekMonday(){ return startOfWeek(strToDate(STATE.epoch)); }
+function weekIndexFor(dateStr){
+  const monday = startOfWeek(strToDate(dateStr));
+  return Math.round(daysBetween(epochWeekMonday(), monday)/7);
+}
+// Reconstruye la fecha del día "dayOffset" (0=lunes … 6=domingo) de la semana wi.
+function dateFromWeekIndex(wi, dayOffset){
+  const d = new Date(epochWeekMonday());
+  d.setDate(d.getDate() + wi*7 + (dayOffset||0));
+  return dateToStr(d);
+}
 // "Día" usado solo para repartir estancias/cristales/puertas/muebles/microtareas: igual que
 // dayIndexFor, pero se puede recolocar con "Actualizar reparto" sin tocar el epoch real
 // (que sigue haciendo falta intacto para rachas, ausencias y semanas de colada/tareas extra).
@@ -2410,9 +2425,8 @@ function checkFamilyBadges(){
 function weeklyMicroPoints(memberIdx, wi){
   let points = 0;
   for(let d=0; d<7; d++){
-    const di = wi*7+d;
-    if(di<0) continue;
-    const ds = dateFromDayIndex(di);
+    const ds = dateFromWeekIndex(wi, d);
+    if(dayIndexFor(ds)<0) continue;
     STATE.microtareas.forEach(mt=>{
       if(isDone(ds, memberIdx, "micro-"+mt.id)) points += MICRO_POINTS_PER_TASK;
     });
@@ -2493,9 +2507,8 @@ function weeklyHelpCount(memberIdx, wi){
   const mid = memberId(memberIdx);
   let count = 0;
   for(let d=0; d<7; d++){
-    const di = wi*7+d;
-    if(di<0) continue;
-    const ds = dateFromDayIndex(di);
+    const ds = dateFromWeekIndex(wi, d);
+    if(dayIndexFor(ds)<0) continue;
     count += STATE.helpLog.filter(h=>h.helperId===mid && h.date===ds).length;
   }
   return count;
