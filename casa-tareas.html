@@ -843,7 +843,8 @@ const LINE_ICONS = {
   family:  { p:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.5 2.5-6.5 6-6.5s6 3 6 6.5"/><circle cx="17.5" cy="9.5" r="2.2"/><path d="M15 20c.3-2.6 1.8-4.5 4.2-4.5"/>', c:'#C97B7B' },
   clock:   { p:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', c:'#7EA6C9' },
   palette: { p:'<path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.2-1.9-.5-.9.1-2.1 1.2-2.1H16a5 5 0 0 0 5-5c0-5-4-9-9-9z"/><circle cx="8" cy="10.5" r="1" fill="#C1544A" stroke="none"/><circle cx="12" cy="7.5" r="1" fill="#5B84B1" stroke="none"/><circle cx="16" cy="10.5" r="1" fill="#D9B23D" stroke="none"/><circle cx="9" cy="14.5" r="1" fill="#6B8E4E" stroke="none"/>', c:'#8A8580' },
-  save:    { p:'<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><rect x="8" y="13" width="8" height="6"/>', c:'#9B8AA6' }
+  save:    { p:'<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><rect x="8" y="13" width="8" height="6"/>', c:'#9B8AA6' },
+  heart:   { p:'<path d="M12 20s-7-4.5-9.5-9C1 8 2.5 4.5 6 4.5c2 0 3.3 1.1 4 2.3.7-1.2 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 15.5 12 20 12 20z"/>', c:'#D9666B' }
 };
 function pixelIcon(key, size){
   size = size || 15;
@@ -1189,7 +1190,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0 };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0, helpLog: [] };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1207,6 +1208,7 @@ if(!STATE.house || !STATE.house.length) STATE.house = DEFAULT_HOUSE;
 if(!STATE.epoch) STATE.epoch = dateToStr(new Date());
 if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
+if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
@@ -1744,13 +1746,22 @@ function helpWithTask(ownerMemberIdx, key){
     recordLifetimeCoverage(today, ownerMemberIdx, key);
   }
   updateStats(selMemberIdx, task, 1); // los minutos/puntos van para quien ayuda
+  const helperStats = getStats(selMemberIdx);
+  helperStats.ayudas = (helperStats.ayudas||0) + 1;
+  if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
+  STATE.helpLog.push({date: today, helperId: memberId(selMemberIdx)});
+  if(STATE.helpLog.length > 3000) STATE.helpLog = STATE.helpLog.slice(-3000);
+  save();
   sfxDone();
   const ownerName = STATE.members[ownerMemberIdx].name;
   const helperName = STATE.members[selMemberIdx].name;
   toast(helperName+" ha ayudado a "+ownerName+" con "+task.tipo.toLowerCase());
   maybeMascotCheer();
+  checkBadges(selMemberIdx);
+  checkFamilyBadges();
   openHelpHouseModal();
   if(currentView==="hoy") renderHoy();
+  if(currentView==="logros") renderLogros();
   updateHud();
 }
 const EXPRESS_CLEAN_VISIBLE_ROOMS = ["salón","salon","cocina","entrada","recibidor","pasillo","baño","bano","aseo","porche","terraza","comedor","rellano"];
@@ -2091,27 +2102,40 @@ function openMoreMicrotareas(){
   const today = dateToStr(new Date());
   const featuredIds = todaysMicrotareas(today, selMemberIdx).map(mt=>mt.id);
   const rest = STATE.microtareas.filter(mt=>!featuredIds.includes(mt.id));
+  const featuredDiariasIds = dailyMicrotareas(today, selMemberIdx).map(t=>t.key.slice('microd-'.length));
+  const restDiarias = (STATE.microtareasDiarias||[]).filter(mt=>!featuredDiariasIds.includes(mt.id));
+  const microItemHTML = (mt, keyPrefix, toggleFn) => {
+    const key = keyPrefix+mt.id;
+    const done = isDone(today, selMemberIdx, key);
+    return `<div class="task ${done?'done':''}" onclick="${toggleFn}('${mt.id}')">
+      <div class="check">${done?'✓':''}</div>
+      <div class="ticon">${pixelIcon('sparkle',15)}</div>
+      <div class="tinfo"><div class="ttitle">${mt.name}</div></div>
+    </div>`;
+  };
   const body = document.getElementById("modalBody");
   body.innerHTML = `
     <button class="close-x" onclick="closeModal()">✕</button>
     <h3>Más microtareas</h3>
     <p class="muted">¿Has hecho alguna de estas también? Cada una son ${MICRO_POINTS_PER_TASK} minipuntos extra, no cuentan como tiempo.</p>
+    <div class="badge-group-title">Otras microtareas</div>
     <div class="tasklist">
-    ${rest.length ? rest.map(mt=>{
-      const key = "micro-"+mt.id;
-      const done = isDone(today, selMemberIdx, key);
-      return `<div class="task ${done?'done':''}" onclick="toggleExtraMicro('${mt.id}')">
-        <div class="check">${done?'✓':''}</div>
-        <div class="ticon">${pixelIcon('sparkle',15)}</div>
-        <div class="tinfo"><div class="ttitle">${mt.name}</div></div>
-      </div>`;
-    }).join("") : '<p class="muted">No hay más microtareas en la lista. Añade alguna en Casa → Microtareas.</p>'}
+    ${rest.length ? rest.map(mt=>microItemHTML(mt,'micro-','toggleExtraMicro')).join("") : '<p class="muted" style="font-size:10.5px;">No hay más microtareas en la lista. Añade alguna en Casa → Microtareas.</p>'}
+    </div>
+    <div class="badge-group-title">Otras microtareas diarias</div>
+    <div class="tasklist">
+    ${restDiarias.length ? restDiarias.map(mt=>microItemHTML(mt,'microd-','toggleExtraMicroDiaria')).join("") : '<p class="muted" style="font-size:10.5px;">No hay más microtareas diarias en la lista. Añade alguna en Casa → Microtareas.</p>'}
     </div>`;
   openModal();
 }
 function toggleExtraMicro(mtId){
   const today = dateToStr(new Date());
   toggleDoneUI(today, selMemberIdx, "micro-"+mtId);
+  openMoreMicrotareas();
+}
+function toggleExtraMicroDiaria(mtId){
+  const today = dateToStr(new Date());
+  toggleDoneUI(today, selMemberIdx, "microd-"+mtId);
   openMoreMicrotareas();
 }
 
@@ -2211,7 +2235,8 @@ const COMBO_BADGES = [
   {id:"semana_combo", icon:"target", name:"Semana combo",        desc:"Racha 7 + colada hecha"},
   {id:"mes_combo",    icon:"rocket", name:"Mes combo",           desc:"Racha 30 + colada del mes"},
   {id:"super",        icon:"gem", name:"Superhéroe doméstico", desc:"90+ días sin nada atrasado"},
-  {id:"weekly_leader", icon:"crown", name:"Ganador de la semana", desc:"Más minipuntos esa semana"}
+  {id:"weekly_leader", icon:"crown", name:"Ganador de la semana", desc:"Más minipuntos esa semana"},
+  {id:"helper_week",  icon:"heart", name:"Ayudante de la semana", desc:"Quien más ha ayudado esa semana"}
 ];
 const CUMULATIVE_BADGES = [
   {id:"min100",   field:"totalMinutes", min:100,  icon:"target", name:"100 minutos",  desc:"100 min acumulados"},
@@ -2224,7 +2249,8 @@ const CUMULATIVE_BADGES = [
   {id:"mueble20", field:"mueble",       min:20,   icon:"chair", name:"As del mueble",   desc:"20 muebles limpios"},
   {id:"colada10", field:"colada",       min:10,   icon:"basket", name:"Lavandero experto", desc:"10 tareas de colada"},
   {id:"planta10", field:"planta",       min:10,   icon:"leaf", name:"Manos verdes",    desc:"10 riegos de plantas"},
-  {id:"mascota10",field:"mascota",      min:10,   icon:"paw", name:"Mejor amigo",     desc:"10 cuidados a mascotas"}
+  {id:"mascota10",field:"mascota",      min:10,   icon:"paw", name:"Mejor amigo",     desc:"10 cuidados a mascotas"},
+  {id:"ayuda10",  field:"ayudas",       min:10,   icon:"heart", name:"Mano amiga",    desc:"10 ayudas a otros"}
 ];
 const FAMILY_BADGES = [
   {id:"family_day",   icon:"home",   name:"Día perfecto en familia",  desc:"Todos cumplieron el mismo día"},
@@ -2294,6 +2320,7 @@ function checkFamilyBadges(){
   if(score>=1000) awardFamilyBadge("family_score1000", "Equipo 1000");
   if(score>=5000) awardFamilyBadge("family_score5000", "Equipo 5000");
   checkWeeklyLeader();
+  checkWeeklyHelper();
 }
 function weeklyMicroPoints(memberIdx, wi){
   let points = 0;
@@ -2375,6 +2402,33 @@ function checkWeeklyLeader(){
     }
   }
 }
+// Cuántas veces ha usado "Ayudar" un miembro dentro de una semana concreta (wi = índice de semana).
+function weeklyHelpCount(memberIdx, wi){
+  if(!Array.isArray(STATE.helpLog) || !STATE.helpLog.length) return 0;
+  const mid = memberId(memberIdx);
+  let count = 0;
+  for(let d=0; d<7; d++){
+    const di = wi*7+d;
+    if(di<0) continue;
+    const ds = dateFromDayIndex(di);
+    count += STATE.helpLog.filter(h=>h.helperId===mid && h.date===ds).length;
+  }
+  return count;
+}
+function checkWeeklyHelper(){
+  if(STATE.members.length < 2) return;
+  const prevWi = weekIndexFor(dateToStr(new Date())) - 1;
+  if(prevWi < 0) return;
+  let best = 0, bestIdx = -1, tie = false;
+  STATE.members.forEach((m,i)=>{
+    const count = weeklyHelpCount(i, prevWi);
+    if(count > best){ best = count; bestIdx = i; tie = false; }
+    else if(count === best && count > 0){ tie = true; }
+  });
+  if(bestIdx >= 0 && best > 0 && !tie){
+    awardBadge(bestIdx, "helper_week_w"+prevWi, "Ayudante de la semana");
+  }
+}
 function checkBadges(memberIdx){
   if(!STATE.members[memberIdx]) return;
   const streak = currentStreak(memberIdx);
@@ -2401,10 +2455,11 @@ function badgeCountFor(memberIdx){
 /* ======================= ESTADÍSTICAS ACUMULADAS ======================= */
 function getStats(memberIdx){
   const mid = memberId(memberIdx);
-  if(!STATE.stats[mid]) STATE.stats[mid] = {totalMinutes:0,totalTasks:0,cristal:0,puerta:0,mueble:0,colada:0,planta:0,mascota:0,microPoints:0,bonusPoints:0,pointsSpent:0};
+  if(!STATE.stats[mid]) STATE.stats[mid] = {totalMinutes:0,totalTasks:0,cristal:0,puerta:0,mueble:0,colada:0,planta:0,mascota:0,microPoints:0,bonusPoints:0,pointsSpent:0,ayudas:0};
   if(STATE.stats[mid].microPoints===undefined) STATE.stats[mid].microPoints = 0;
   if(STATE.stats[mid].bonusPoints===undefined) STATE.stats[mid].bonusPoints = 0;
   if(STATE.stats[mid].pointsSpent===undefined) STATE.stats[mid].pointsSpent = 0;
+  if(STATE.stats[mid].ayudas===undefined) STATE.stats[mid].ayudas = 0;
   return STATE.stats[mid];
 }
 function updateStats(memberIdx, task, sign){
@@ -2917,7 +2972,7 @@ function toggleDoneUI(dateStr, memberIdx, key){
   toggleDone(dateStr, memberIdx, key);
   const tasks = tasksForMemberOnDate(dateStr, memberIdx);
   let t = tasks.find(x=>x.key===key);
-  if(!t && key.indexOf('micro-')===0) t = {min:0, key, isMicro:true};
+  if(!t && (key.indexOf('micro-')===0 || key.indexOf('microd-')===0)) t = {min:0, key, isMicro:true};
   if(t){ updateStats(memberIdx, t, wasDone?-1:1); save(); }
   if(!wasDone && key.indexOf('plant-')===0){
     const plantId = key.split('-')[1];
@@ -4829,6 +4884,7 @@ if(!STATE.microtareasDiarias) STATE.microtareasDiarias = DEFAULT_MICROTAREAS_DIA
       if(!STATE.prizes) STATE.prizes = {};
       if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
+if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
