@@ -73,6 +73,16 @@ body{
 h1,h2,h3,.brand{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-weight:600;letter-spacing:-.01em;}
 button{font-family:inherit;}
 input,select{font-family:inherit;font-size:15px;}
+/* Recuadros de rellenar (texto, número, fecha, select, textarea): sin esto, los que no llevan
+   estilo propio se quedan con el fondo blanco nativo del navegador, que en modo oscuro resulta
+   agresivo. Con las variables de tema se oscurecen solos junto con el resto de la app. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea{
+  background:var(--paper);color:var(--ink);
+  border:1px solid var(--line-solid);border-radius:var(--radius-sm);
+  padding:7px 9px;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"])::placeholder,textarea::placeholder{color:var(--muted);opacity:1;}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--pine);}
 .pixel{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-weight:600;}
 .picon{display:inline-block;vertical-align:middle;flex:0 0 auto;opacity:.9;}
 
@@ -4386,10 +4396,10 @@ function shopItemRowHTML(it, cat){
   return `<div class="task ${it.done?'done':''}" onclick="toggleShopItem('${it.id}')">
     <div class="check">${it.done?'✓':''}</div>
     <div class="tinfo"><div class="ttitle">${it.text}</div></div>
-    <select onclick="event.stopPropagation()" onchange="event.stopPropagation(); changeShopCategory('${it.id}', this.value)" style="font-size:9.5px;padding:2px;border:1.5px solid var(--line-solid);border-radius:2px;background:#fff;">
+    <select onclick="event.stopPropagation()" onchange="event.stopPropagation(); changeShopCategory('${it.id}', this.value)" style="font-size:9.5px;padding:2px;border:1.5px solid var(--line-solid);border-radius:2px;background:var(--paper);color:var(--ink);">
       ${STATE.shopCategories.map(c=>`<option value="${c}" ${c===cat?'selected':''}>${c}</option>`).join("")}
     </select>
-    ${cat==="Comida" ? `<select onclick="event.stopPropagation()" onchange="event.stopPropagation(); changeFoodSubcategory('${it.id}', this.value)" style="font-size:9.5px;padding:2px;border:1.5px solid var(--line-solid);border-radius:2px;background:#fff;">
+    ${cat==="Comida" ? `<select onclick="event.stopPropagation()" onchange="event.stopPropagation(); changeFoodSubcategory('${it.id}', this.value)" style="font-size:9.5px;padding:2px;border:1.5px solid var(--line-solid);border-radius:2px;background:var(--paper);color:var(--ink);">
       ${FOOD_SUBCATEGORY_ORDER.map(s=>`<option value="${s}" ${s===(it.subcategory||"Otros alimentos")?'selected':''}>${s}</option>`).join("")}
     </select>` : ``}
     <button onclick="event.stopPropagation(); removeShopItem('${it.id}')" style="background:none;border:none;color:var(--danger);font-size:16px;">✕</button>
@@ -4816,6 +4826,7 @@ function chooseTheme(id){
 function chooseBgTheme(id){
   STATE.bgTheme = id;
   applyBgTheme(id);
+  if(STATE.darkMode) applyDarkMode(true); // los tonos de fondo son solo para modo claro; si el oscuro está activo, que no lo pise
   save();
   renderApariencia();
   toast("Tono de fondo aplicado");
