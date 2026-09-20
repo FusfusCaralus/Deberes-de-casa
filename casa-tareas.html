@@ -321,6 +321,14 @@ input,select{font-family:inherit;font-size:15px;}
       <div class="member-chip-row" id="memberChipsHoy"></div>
     </div>
     <div class="card" style="padding:10px 12px;">
+      <div style="font-weight:700;font-size:12px;margin-bottom:6px;">⭐ Asuntos urgentes</div>
+      <div id="urgentTasksHoy"></div>
+      <div class="row" style="margin-top:8px;gap:6px;">
+        <input type="text" id="newUrgentTaskInput" placeholder="Ej: Llamar al fontanero" style="flex:1;" onkeydown="if(event.key==='Enter'){addUrgentTask();}">
+        <button class="btn small" onclick="addUrgentTask()">+ Añadir</button>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 12px;">
       <div style="font-weight:700;font-size:12px;margin-bottom:6px;">¿Cómo está la ropa del cesto?</div>
       <div class="floor-chips" id="laundryStatusHoy" style="margin-bottom:0;"></div>
     </div>
@@ -1190,7 +1198,7 @@ function load(){
   }catch(e){}
   return { house: DEFAULT_HOUSE, members: [], chores: DEFAULT_CHORES, done:{}, epoch: dateToStr(new Date()),
     plants: [], pets: [], shopping: [], urgent: [], laundry: [...DEFAULT_LAUNDRY], settings: {...DEFAULT_SETTINGS}, theme: "tinta", bgTheme: "marfil",
-    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0, helpLog: [], assignedSnapshots: {} };
+    vacations: [], earned: {}, laundryLoads: [], stats: {}, roomTasks: [...DEFAULT_ROOM_TASKS], shopCategories: [...SHOP_CATEGORY_ORDER_DEFAULT], otherTimes: DEFAULT_OTHER_TIMES.map(t=>({...t})), microtareas: DEFAULT_MICROTAREAS.map(t=>({...t})), microtareasDiarias: DEFAULT_MICROTAREAS_DIARIAS.map(t=>({...t})), householdDone: {}, taskOverrides: {}, prizes: {}, taskTransfers: [], pendingCongrats: {}, lavadosProgramados: DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t})), rewardCatalog: DEFAULT_REWARD_CATALOG.map(t=>({...t})), familyPrizes: [], familyPointsSpent: 0, laundryStatus: null, lifetimeCoverage: {cristal:{},puerta:{},mueble:{},roomtask:{}}, darkMode: false, houseName: "", improvements: [], repartoBaseDi: 0, helpLog: [], assignedSnapshots: {}, urgentTasks: [] };
 }
 let fbAuth = null, fbDb = null, fbSyncEnabled = false, fbHouseCode = null, fbStateRef = null, fbSyncTimer = null;
 let STATE = load();
@@ -1210,6 +1218,7 @@ if(!STATE.taskTransfers) STATE.taskTransfers = [];
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
 if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
 if(!STATE.assignedSnapshots) STATE.assignedSnapshots = {};
+if(!Array.isArray(STATE.urgentTasks)) STATE.urgentTasks = [];
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
@@ -2350,7 +2359,8 @@ const CUMULATIVE_BADGES = [
   {id:"colada10", field:"colada",       min:10,   icon:"basket", name:"Lavandero experto", desc:"10 tareas de colada"},
   {id:"planta10", field:"planta",       min:10,   icon:"leaf", name:"Manos verdes",    desc:"10 riegos de plantas"},
   {id:"mascota10",field:"mascota",      min:10,   icon:"paw", name:"Mejor amigo",     desc:"10 cuidados a mascotas"},
-  {id:"ayuda10",  field:"ayudas",       min:10,   icon:"heart", name:"Mano amiga",    desc:"10 ayudas a otros"}
+  {id:"ayuda10",  field:"ayudas",       min:10,   icon:"heart", name:"Mano amiga",    desc:"10 ayudas a otros"},
+  {id:"urgente10",field:"urgentes",     min:10,   icon:"warning", name:"Apagafuegos", desc:"10 asuntos urgentes resueltos"}
 ];
 const FAMILY_BADGES = [
   {id:"family_day",   icon:"home",   name:"Día perfecto en familia",  desc:"Todos cumplieron el mismo día"},
@@ -2553,11 +2563,12 @@ function badgeCountFor(memberIdx){
 /* ======================= ESTADÍSTICAS ACUMULADAS ======================= */
 function getStats(memberIdx){
   const mid = memberId(memberIdx);
-  if(!STATE.stats[mid]) STATE.stats[mid] = {totalMinutes:0,totalTasks:0,cristal:0,puerta:0,mueble:0,colada:0,planta:0,mascota:0,microPoints:0,bonusPoints:0,pointsSpent:0,ayudas:0};
+  if(!STATE.stats[mid]) STATE.stats[mid] = {totalMinutes:0,totalTasks:0,cristal:0,puerta:0,mueble:0,colada:0,planta:0,mascota:0,microPoints:0,bonusPoints:0,pointsSpent:0,ayudas:0,urgentes:0};
   if(STATE.stats[mid].microPoints===undefined) STATE.stats[mid].microPoints = 0;
   if(STATE.stats[mid].bonusPoints===undefined) STATE.stats[mid].bonusPoints = 0;
   if(STATE.stats[mid].pointsSpent===undefined) STATE.stats[mid].pointsSpent = 0;
   if(STATE.stats[mid].ayudas===undefined) STATE.stats[mid].ayudas = 0;
+  if(STATE.stats[mid].urgentes===undefined) STATE.stats[mid].urgentes = 0;
   return STATE.stats[mid];
 }
 function updateStats(memberIdx, task, sign){
@@ -2843,6 +2854,7 @@ function mascotMessageCardHTML(memberIdx, dateStr){
 }
 function renderHoy(){
   renderLaundryStatus();
+  renderUrgentTasksHoy();
   const today = dateToStr(new Date());
   document.getElementById("todayDate").textContent = strToDate(today).toLocaleDateString('es-ES',{weekday:'long', day:'numeric', month:'long'});
   const wrap = document.getElementById("memberChipsHoy");
@@ -4809,6 +4821,84 @@ function chooseBgTheme(id){
   toast("Tono de fondo aplicado");
 }
 
+/* ======================= ASUNTOS URGENTES ======================= */
+// Lista simple de "hay que resolver esto hoy": no está atada a un día en concreto, así que si
+// no se resuelve, sigue apareciendo tal cual al día siguiente (y al otro) hasta que alguien lo
+// marca hecho. No resta ni suma minutos/puntos de tareas, pero cuenta para la insignia
+// "Apagafuegos" en Logros.
+function visibleUrgentTasks(){
+  const today = dateToStr(new Date());
+  return (STATE.urgentTasks||[]).filter(u=>!u.done || u.doneAt===today);
+}
+function addUrgentTask(){
+  const input = document.getElementById("newUrgentTaskInput");
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+  if(!Array.isArray(STATE.urgentTasks)) STATE.urgentTasks = [];
+  STATE.urgentTasks.push({id:"urg"+Date.now(), text, createdAt: dateToStr(new Date()), done:false, doneAt:null, doneByMid:null});
+  input.value = "";
+  save();
+  renderUrgentTasksHoy();
+}
+function toggleUrgentTask(id){
+  const item = (STATE.urgentTasks||[]).find(u=>u.id===id);
+  if(!item) return;
+  if(item.done){
+    // deshacer: quita la estrellita a quien la resolvió
+    if(item.doneByMid){
+      const idx = STATE.members.findIndex(m=>m.id===item.doneByMid);
+      if(idx>=0){ const st=getStats(idx); st.urgentes = Math.max(0,(st.urgentes||0)-1); }
+    }
+    item.done = false; item.doneAt = null; item.doneByMid = null;
+    save();
+  } else {
+    item.done = true;
+    item.doneAt = dateToStr(new Date());
+    item.doneByMid = memberId(selMemberIdx);
+    const st = getStats(selMemberIdx);
+    st.urgentes = (st.urgentes||0) + 1;
+    save();
+    sfxDone();
+    toast("⭐ Asunto urgente resuelto: "+item.text);
+    maybeMascotCheer();
+    checkBadges(selMemberIdx);
+    checkFamilyBadges();
+  }
+  renderUrgentTasksHoy();
+  if(currentView==="logros") renderLogros();
+  updateHud();
+}
+function removeUrgentTask(id){
+  const item = (STATE.urgentTasks||[]).find(u=>u.id===id);
+  if(item && item.done && item.doneByMid){
+    const idx = STATE.members.findIndex(m=>m.id===item.doneByMid);
+    if(idx>=0){ const st=getStats(idx); st.urgentes = Math.max(0,(st.urgentes||0)-1); }
+  }
+  STATE.urgentTasks = (STATE.urgentTasks||[]).filter(u=>u.id!==id);
+  save();
+  renderUrgentTasksHoy();
+}
+function renderUrgentTasksHoy(){
+  const el = document.getElementById("urgentTasksHoy");
+  if(!el) return;
+  const today = dateToStr(new Date());
+  const items = visibleUrgentTasks();
+  if(!items.length){
+    el.innerHTML = '<p class="muted" style="font-size:11px;margin:0;">Nada urgente pendiente. Añade algo si surge.</p>';
+    return;
+  }
+  el.innerHTML = items.map(u=>{
+    const overdue = !u.done && u.createdAt < today;
+    return `<div class="task ${u.done?'done':''}" style="padding:5px 2px;">
+      <div class="check" onclick="toggleUrgentTask('${u.id}')">${u.done?'✓':''}</div>
+      <div class="ticon" onclick="toggleUrgentTask('${u.id}')">${pixelIcon('warning',14)}</div>
+      <div class="tinfo" onclick="toggleUrgentTask('${u.id}')"><div class="ttitle">${u.text}</div>${overdue?'<div class="tsub" style="color:#C1544A;">Pendiente de antes, sigue en pie</div>':''}</div>
+      <button class="btn small" style="margin-left:4px;" onclick="event.stopPropagation();removeUrgentTask('${u.id}')">✕</button>
+    </div>`;
+  }).join("");
+}
+
 /* ======================= COLADA ======================= */
 function renderLaundryStatus(){
   const opts = [{v:"limpia", label:"🧺 Limpia"}, {v:"sucia", label:"🌀 Sucia"}];
@@ -4984,6 +5074,7 @@ if(!STATE.microtareasDiarias) STATE.microtareasDiarias = DEFAULT_MICROTAREAS_DIA
 if(!STATE.pendingCongrats) STATE.pendingCongrats = {};
 if(!Array.isArray(STATE.helpLog)) STATE.helpLog = [];
 if(!STATE.assignedSnapshots) STATE.assignedSnapshots = {};
+if(!Array.isArray(STATE.urgentTasks)) STATE.urgentTasks = [];
 if(!STATE.lavadosProgramados) STATE.lavadosProgramados = DEFAULT_LAVADOS_PROGRAMADOS.map(t=>({...t}));
 if(!STATE.rewardCatalog) STATE.rewardCatalog = DEFAULT_REWARD_CATALOG.map(t=>({...t}));
 if(!STATE.familyPrizes) STATE.familyPrizes = [];
