@@ -643,6 +643,7 @@ input[type="checkbox"],input[type="radio"]{accent-color:var(--pine);}
       <button class="btn block" onclick="addShopItem()">+ Añadir a la lista</button>
       <button class="btn secondary block" id="voiceShopBtn" style="margin-top:8px;" onclick="toggleVoiceShopping()">🎤 Dictar la compra</button>
       <button class="btn secondary block" style="margin-top:8px;" onclick="clearShopDone()">Quitar comprados</button>
+      <button class="btn secondary block" style="margin-top:8px;" onclick="printShoppingList()">🖨️ Generar PDF de la lista de la compra</button>
     </div>
     <div class="card">
       <h2>Categorías</h2>
@@ -1114,9 +1115,9 @@ function applyDarkMode(on){
     r.setProperty('--muted', '#9B968A');
     r.setProperty('--line', '#38362F');
     r.setProperty('--line-solid', '#4A473F');
-    r.setProperty('--pine', '#D4A857');
-    r.setProperty('--pine-dark', '#B8903E');
-    r.setProperty('--ochre', '#D4A857');
+    r.setProperty('--pine', '#B8903E');
+    r.setProperty('--pine-dark', '#D4A857');
+    r.setProperty('--ochre', '#B8903E');
     r.setProperty('--good', '#6FBF8B');
     r.setProperty('--danger', '#E08478');
   } else {
@@ -3170,6 +3171,39 @@ function printImprovementShoppingList(){
   document.getElementById("printCuadrante").innerHTML = html;
   window.print();
 }
+function printShoppingList(){
+  if(!STATE.urgent.length && !STATE.shopping.length){ toast("La lista de la compra está vacía"); return; }
+  const houseName = (STATE.houseName||"").trim() || "Deberes de casa";
+  let html = `<h1 style="font-family:-apple-system,sans-serif;margin-bottom:2px;">${houseName}</h1>
+    <p style="font-family:-apple-system,sans-serif;color:#555;margin-top:0;margin-bottom:16px;">Lista de la compra — ${new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})}</p>`;
+  if(STATE.urgent.length){
+    html += `<h3 style="font-family:-apple-system,sans-serif;margin-bottom:4px;color:#B5524A;">Urgente</h3>
+      <ul style="font-family:-apple-system,sans-serif;font-size:14px;margin-top:0;">
+        ${STATE.urgent.map(it=>`<li>☐ ${it.text}</li>`).join("")}
+      </ul>`;
+  }
+  STATE.shopCategories.forEach(cat=>{
+    const items = STATE.shopping.filter(it => (it.category||"Otros")===cat);
+    if(!items.length) return;
+    html += `<h3 style="font-family:-apple-system,sans-serif;margin-bottom:4px;">${cat} <span style="font-weight:400;color:#777;font-size:13px;">(${items.length})</span></h3>`;
+    if(cat === "Comida"){
+      FOOD_SUBCATEGORY_ORDER.forEach(sub=>{
+        const subItems = items.filter(it => (it.subcategory||"Otros alimentos")===sub);
+        if(!subItems.length) return;
+        html += `<p style="font-family:-apple-system,sans-serif;font-size:12px;color:#777;margin:6px 0 2px;">${sub}</p>
+          <ul style="font-family:-apple-system,sans-serif;font-size:14px;margin-top:0;">
+            ${subItems.map(it=>`<li>☐ ${it.text}</li>`).join("")}
+          </ul>`;
+      });
+    } else {
+      html += `<ul style="font-family:-apple-system,sans-serif;font-size:14px;margin-top:0;">
+        ${items.map(it=>`<li>☐ ${it.text}</li>`).join("")}
+      </ul>`;
+    }
+  });
+  document.getElementById("printCuadrante").innerHTML = html;
+  window.print();
+}
 function togglePastDays(){ showPastDays = !showPastDays; renderSemana(); }
 function weekDayBlockHTML(d){
   const todayStr = dateToStr(new Date());
@@ -4410,7 +4444,7 @@ function renderShopCategoryChips(){
   if(!el) return;
   el.innerHTML = STATE.shopCategories.map(cat=>{
     const removable = cat !== "Otros";
-    return `<span class="pill" style="background:var(--ink);display:inline-flex;align-items:center;gap:5px;">${cat}${removable?` <button onclick="removeShopCategory('${cat}')" style="background:none;border:none;color:#fff;font-size:11px;cursor:pointer;padding:0;">✕</button>`:''}</span>`;
+    return `<span class="pill" style="background:#25241F;color:#fff;display:inline-flex;align-items:center;gap:5px;">${cat}${removable?` <button onclick="removeShopCategory('${cat}')" style="background:none;border:none;color:#fff;font-size:11px;cursor:pointer;padding:0;">✕</button>`:''}</span>`;
   }).join(" ");
 }
 function addShopCategory(){
